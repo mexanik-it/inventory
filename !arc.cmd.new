@@ -1,0 +1,49 @@
+@echo off
+chcp 65001 >nul
+setlocal enabledelayedexpansion
+
+:: Получаем дату и время в безопасном формате (без двоеточий)
+for /f "delims=" %%a in ('powershell -NoProfile -Command "Get-Date -Format 'yyyy-MM-dd_HHmmss'"') do set dt=%%a
+
+echo ===== Start =====
+echo Timestamp: %dt%
+
+set time_start=%time%
+
+:: Создаём архив (имя без запрещённых символов)
+lha.exe a ..\inventory-%dt%.lha *
+if errorlevel 1 (
+    echo ERROR: Archiving failed!
+    pause
+    exit /b 1
+)
+
+set time_end=%time%
+
+echo.
+echo Start time: %time_start%
+echo End time:   %time_end%
+echo.
+
+echo Transferring INVENTORY files to an FTP server...
+
+:: Загрузка первого файла
+curl -i -T ..\inventory-%dt%.lha -u a0831755 ftp://denkin.ru/domains/denkin.ru/public_html/tmp/
+if errorlevel 1 echo Warning: First FTP upload failed.
+
+:: Загрузка второго файла
+curl -i -T ..\inventory-%dt%.lha -u dimon ftp://86.110.167.86/ftp/_inventory/
+if errorlevel 1 echo Warning: Second FTP upload failed.
+
+echo.
+
+:: Копирование файлов (правильный синтаксис copy)
+copy /V "\\10.67.1.36\oit_techbase\list-points\list-points.html" "\\10.67.1.36\oit_techbase\list-points\list-points.html.bak"
+if errorlevel 1 echo Warning: HTML backup failed.
+
+copy /V "\\10.67.1.36\oit_techbase\list-points\list-points.xls" "\\10.67.1.36\oit_techbase\list-points\list-points.xls.bak"
+if errorlevel 1 echo Warning: XLS backup failed.
+
+echo.
+echo Done.
+pause

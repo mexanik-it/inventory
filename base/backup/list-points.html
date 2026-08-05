@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Инвентаризация</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card-bg: #ffffff;
+      --border: #e0e6ed;
+      --text: #333;
+      --header: #2c3e50;
+      --accent: #3498db;
+    }
+
+    body {
+      margin: 0;
+      padding: 16px;
+      font-family: "Calibri", "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    h1 {
+      margin-top: 0;
+      margin-bottom: 8px;
+      color: var(--header);
+      font-weight: 600;
+    }
+
+    .stats-panel {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+      background: var(--card-bg);
+      padding: 12px 16px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      border: 1px solid var(--border);
+    }
+
+    .stat-item {
+/*      font-size: 0.95rem;          */
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stat-value {
+      font-weight: bold;
+      color: var(--accent); 
+    }
+
+    /* Цвета для ОС */
+    .windows { color: #0078d7; }
+    .linux   { color: #159957; }
+
+    /* Цвета для накопителей */
+    .hdd     { color: #d35400; }
+    .ssd     { color: #8e44ad; }
+
+    /* Цвета для процессоров */
+    .cpu-i3  { color: #2980b9; }   /* синий */
+    .cpu-i5  { color: #27ae60; }   /* зелёный */
+    .cpu-i7  { color: #9b59b6; }   /* фиолетовый */
+    .cpu-i9  { color: #e74c3c; }   /* красный */
+    .cpu-amd { color: #e67e22; }   /* оранжевый */
+
+    .table-container {
+      max-height: 84vh;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      background: white;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 960px;
+      table-layout: fixed;
+      font-size: .9em;
+    }
+    th, td {
+      padding: 10px 12px;
+      text-align: left;
+      border: none;
+    }
+    tbody td {
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #A0CFEC;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.12);
+      text-align: center;
+      color: #003366;
+    }
+
+    tr:hover {
+      cursor: pointer;
+      background: #eaf2fa;
+    }
+    thead tr:hover {
+      background: transparent;
+      cursor: default;
+    }
+
+    /*td:nth-child(4), th:nth-child(4) { text-align: right; } /* 4 столбец выравнивание по правому краю, целиком */
+    td:nth-child(3)  { color: green; font-weight: bold; }
+    td:nth-child(2)  { color: blue; font-weight: bold; }
+    td:nth-child(11) { text-align: right; } /* 13 столбец выравнивание по правому краю, целиком */
+    td:nth-child(12), th:nth-child(12) { text-align: center; } /* 10 столбец выравнивание по центру, целиком */
+    td:nth-child(13) { text-align: right; } /* 13 столбец выравнивание по правому краю, целиком */
+
+    @media (max-width: 768px) {
+      .stats-panel { flex-direction: column; align-items: stretch; }
+      thead th, td { padding: 8px 10px; font-size: 0.88rem; }
+    }
+  </style>
+</head>
+<body>
+
+<h1>Инвентаризация рабочих станций</h1>
+
+<div class="stats-panel" id="stats-panel">
+  <div class="stat-item">
+    Всего ПК: <span id="total-count" class="stat-value">0</span>
+  </div>
+  <div class="stat-item">
+    Windows: <span id="win-count" class="stat-value">0</span>
+  </div>
+  <div class="stat-item">
+    Linux: <span id="linux-count" class="stat-value">0</span>
+  </div>
+  <div class="stat-item">
+    i3: <span id="i3-count" class="stat-value">0</span>
+  </div>
+  <div class="stat-item">
+    i5: <span id="i5-count" class="stat-value">0</span>
+  </div>
+  <div class="stat-item">
+    i7: <span id="i7-count" class="stat-value">0</span>
+  </div>
+  <div class="stat-item">
+    i9: <span id="i9-count" class="stat-value">0</span>
+  </div>
+  <div class="stat-item">
+    AMD: <span id="amd-count" class="stat-value">0</span>
+  </div>
+</div>
+
+<div class="table-container">
+  <table id="myTable">
+    <thead>
+      <tr>
+        <th width="4%">date</th>
+        <th width="5%">ip</th>
+        <th width="6.5%">mac</th>
+        <th width="11%">motherboard</th>
+        <th width="9%">processor</th>
+        <th width="2%">memory</th>
+        <th width="10%">hard disk</th>
+        <th>hdd size</th>
+        <th width="10%">operation system</th>
+        <th width="4%">computer</th>
+        <th width="10%">printer</th>
+        <th width="2%">room</th>
+        <th width="4%">building</th>
+      </tr>
+    </thead>
+    <tbody>
+<!-- INSERT_DIMON_BLOCK_HERE -->
+
+      <tr> 
+        <td>28.07.2026</td>
+        <td>10.67.24.12</td>
+        <td>04-D9-F5-81-FB-29</td>
+        <td>ASUSTeK PRIME A320M-A</td>
+        <td>AMD Ryzen 5 3400G with Radeon Vega Graphics    </td>
+        <td>6 GiB</td>
+        <td>WDC WD5003ABYX-01WERA1</td>
+        <td>HDD 500Gb</td>
+        <td>Windows 10 Pro</td>
+        <td>WS-024-012</td>
+        <td>HP LaserJet Pro M404dn</td>
+        <td>disp</td>
+        <td>skoray</td>
+      </tr>
+
+
+      <tr> 
+        <td>29.07.2026</td>
+        <td>10.67.14.88</td>
+        <td>D0-27-88-9A-7C-7C</td>
+        <td>Foxconn H61S</td>
+        <td>Intel Celeron G530 2.40GHz</td>
+        <td>12Gb</td>
+        <td>WD Green</td>
+        <td>SSD 500Gb</td>
+        <td>Windows 10 Pro</td>
+        <td>WS-014-088</td>
+        <td>Samsung SCX-483x 5x3x Series</td>
+        <td>923</td>
+        <td>pol1 khl</td>
+      </tr>
+
+
+      <tr> 
+        <td>29.07.2026</td>
+        <td>10.67.64.46</td>
+        <td>00:58:3F:17:69:FE</td>
+        <td>Aquarius AQH310CM</td>
+        <td>Intel(R) i5-9400 2.90GHz</td>
+        <td>8GB</td>
+        <td>FOXLINE_FLSSD256X5</td>
+        <td>SSD 256Gb</td>
+        <td>ALT Workstation 9.0</td>
+        <td>1051a2</td>
+        <td>Cups-PDF</td>
+        <td>923</td>
+        <td>pol1 khl</td>
+      </tr>
+
+
+      <tr> 
+        <td>28.07.2026</td>
+        <td>10.67.24.12</td>
+        <td>04-D9-F5-81-FB-29</td>
+        <td>ASUSTeK PRIME A320M-A</td>
+        <td>AMD Ryzen 5 3400G with Radeon Vega Graphics</td>
+        <td>6GiB</td>
+        <td>WDC WD5003ABYX-01WERA1</td>
+        <td>HDD 500Gb</td>
+        <td>Windows 10 Pro</td>
+        <td>WS-024-012</td>
+        <td>HP LaserJet Pro M404dn</td>
+        <td>disp</td>
+        <td>skp</td>
+      </tr>
+
+
+      <tr> 
+        <td>27.07.2026</td>
+        <td>10.67.28.59</td>
+        <td>F8:CC:6E:00:B1:CF</td>
+        <td>DEPO Computers DPH110S</td>
+        <td>Intel(R) G5420 3.80GHz</td>
+        <td>8GB</td>
+        <td>KINGSTON_SA400S37240G</td>
+        <td>SSD 240Gb</td>
+        <td>ALT 8 SP Workstation</td>
+        <td>002096</td>
+        <td>HP LaserJet Pro M428fdw</td>
+        <td>registr</td>
+        <td>pol1</td>
+      </tr>
+
+
+      <tr> 
+        <td>22.07.2026</td>
+        <td>10.67.64.107</td>
+        <td>00:58:3F:0F:4C:F7</td>
+        <td>Aquarius AQB365MC</td>
+        <td>Intel(R) i5-9400 2.90GHz</td>
+        <td>8GB</td>
+        <td>FOXLINE_FLSSD256X5 </td>
+        <td>SSD 256Gb</td>
+        <td>ALT Workstation 9.0</td>
+        <td>1051a2</td>
+        <td>Pantum BP5100DN</td>
+        <td>325</td>
+        <td>pol1</td>
+      </tr>
+
+
+      <tr> 
+        <td>22.07.2026</td>
+        <td>10.67.64.5</td>
+        <td>00:58:3F:17:58:0C</td>
+        <td>Aquarius AQH310CM</td>
+        <td>Intel(R) i5-9400 2.90GHz</td>
+        <td>8GB</td>
+        <td>FOXLINE_FLSSD256X5</td>
+        <td>SSD 256Gb</td>
+        <td>ALT Workstation 9.0</td>
+        <td>1051a2</td>
+        <td>HP M428</td>
+        <td>reg.g.k.</td>
+        <td>pol1</td>
+      </tr>
+
+
+      <tr> 
+        <td>23.07.2026</td>
+        <td>10.67.64.26</td>
+        <td>00:58:3F:17:76:0C</td>
+        <td>Aquarius AQH310CM</td>
+        <td>Intel(R) i5-9400 2.90GHz</td>
+        <td>8 GB</td>
+        <td>FOXLINE_FLSSD256X5 </td>
+        <td>SSD 256Gb</td>
+        <td>ALT Workstation 9.0</td>
+        <td>1051a2</td>
+        <td>Samsung-SCX-483x-5x3x-Series</td>
+        <td>817</td>
+        <td>pol1</td>
+      </tr>
+
+
+      <tr> 
+        <td>22.07.2026</td>
+        <td>10.67.64.2</td>
+        <td>00:58:3F:17:76:20</td>
+        <td>Aquarius AQH310CM</td>
+        <td>Intel(R) i5-9400 2.90GHz</td>
+        <td>8GB</td>
+        <td>FOXLINE_FLSSD256X5</td>
+        <td>SSD 256Gb</td>
+        <td>ALT Workstation 9.0</td>
+        <td>1051a2</td>
+        <td>HP M428</td>
+        <td>registr</td>
+        <td>pol1-3level</td>
+      </tr>
+
+
+      <tr> 
+        <td>24.07.2026</td>
+        <td>10.67.28.73</td>
+        <td>F8:CC:6E:00:AF:9E</td>
+        <td>DEPO Computers DPH110S</td>
+        <td>Intel(R) G5420 3.80GHz</td>
+        <td>8GB</td>
+        <td>QUMO_SSD</td>
+        <td>SSD 120Gb</td>
+        <td>ALT 8 SP Workstation</td>
+        <td>002096</td>
+        <td>HP Laserjet M14-M17</td>
+        <td>1</td>
+        <td>pat.anatom.</td>
+      </tr>
+
+
+      <tr> 
+        <td>17.07.2026</td>
+        <td>10.67.12.70</td>
+        <td>00:58:3F:16:57:0A</td>
+        <td>Aquarius AQB365MC</td>
+        <td>Intel(R) i5-9400 2.90GHz</td>
+        <td>8GB</td>
+        <td>FOXLINE_FLSSD256X5</td>
+        <td>SSD 256Gb</td>
+        <td>ALT Workstation 9.0</td>
+        <td>1051a2</td>
+        <td>unknown</td>
+        <td>sts</td>
+        <td>h5</td>
+      </tr>
+
+
+      <tr> 
+        <td>15.07.2026</td>
+        <td>10.67.12.49</td>
+        <td>00:58:3F:0F:47:D7</td>
+        <td>Aquarius AQB365MC</td>
+        <td>Intel(R) i5-9400 2.90GHz</td>
+        <td>8GB</td>
+        <td>FOXLINE_FLSSD256X5</td>
+        <td>SSD 256Gb</td>
+        <td>ALT Workstation 9.0</td>
+        <td>1051a2</td>
+        <td>unknown</td>
+        <td>sts</td>
+        <td>h2</td>
+      </tr>
+
+
+      <tr> 
+        <td>15.07.2026</td>
+        <td>10.67.64.82</td>
+        <td>00:58:3F:0F:3F:87</td>
+        <td>Aquarius AQB365MC</td>
+        <td>Intel(R) i5-9400 2.90GHz</td>
+        <td>8GB</td>
+        <td>FOXLINE_FLSSD256X5</td>
+        <td>SSD 256Gb</td>
+        <td>ALT Workstation 9.0</td>
+        <td>1051a2</td>
+        <td>unknown</td>
+        <td>433</td>
+        <td>pol1</td>
+      </tr>
+
+
+      <tr> 
+        <td>15.07.2026</td>
+        <td>10.67.64.52</td>
+        <td>00:58:3F:17:59:52</td>
+        <td>Aquarius AQH310CM</td>
+        <td>Intel(R) i5-9400 2.90GHz</td>
+        <td>8GB</td>
+        <td>FOXLINE_FLSSD256X5 </td>
+        <td>SSD 256Gb</td>
+        <td>ALT Workstation 9.0</td>
+        <td>1051a2</td>
+        <td>unknown</td>
+        <td>824</td>
+        <td>pol1</td>
+      </tr>
+
+
+      <tr> 
+        <td>15.07.2026</td>
+        <td>10.67.64.9</td>
+        <td>00:58:3F:17:6A:52</td>
+        <td>Aquarius AQH310CM</td>
+        <td>Intel(R) i5-9400 2.90GHz</td>
+        <td>8GB</td>
+        <td>FOXLINE_FLSSD256X5</td>
+        <td>SSD 256Gb</td>
+        <td>ALT Workstation 9.0</td>
+        <td>1051a2</td>
+        <td>unknown</td>
+        <td>511</td>
+        <td>pol1</td>
+      </tr>
+
+
+      <tr> 
+        <td>15.07.2026</td>
+        <td>10.67.64.26</td>
+        <td>00:58:3F:17:76:0C</td>
+        <td>Aquarius AQH310CM</td>
+        <td>Intel(R) i5-9400 2.90GHz</td>
+        <td>8GB</td>
+        <td>FOXLINE_FLSSD256X5</td>
+        <td>SSD 256Gb</td>
+        <td>ALT Workstation 9.0</td>
+        <td>1051a2</td>
+        <td>unknown</td>
+        <td>817</td>
+        <td>pol1</td>
+      </tr>
+
+
+      <tr> 
+        <td>14.07.2026</td>
+        <td>10.67.22.66</td>
+        <td>2C-F0-5D-9E-B2-56</td>
+        <td>MSI A320M-A PRO</td>
+        <td>AMD Ryzen 5 3400G</td>
+        <td>6GiB</td>
+        <td>Smartbuy SSD 256GB</td>
+        <td>SSD 256Gb</td>
+        <td>Windows 10 Pro</td>
+        <td>WS-022-066</td>
+        <td>HP LaserJet Pro M428fdw</td>
+        <td>registr</td>
+        <td>detstvo</td>
+      </tr>
+
+
+      <tr> 
+        <td>08.07.2026</td>
+        <td>10.67.64.88</td>
+        <td>00:58:3F:17:72:F0</td>
+        <td>Aquarius AQH310CM</td>
+        <td>Intel(R) i5-9400 2.90GHz</td>
+        <td>8GB</td>
+        <td>FOXLINE_FLSSD256X5</td>
+        <td>SSD 256Gb</td>
+        <td>ALT Workstation 9.0</td>
+        <td>1051a2</td>
+        <td>unknown</td>
+        <td>542</td>
+        <td>pol1</td>
+      </tr>
+
+
+      <tr> 
+        <td>29.06.2026</td>
+        <td>10.67.64.40</td>
+        <td>00:58:3F:17:54:E6</td>
+        <td>Aquarius AQH310CM</td>
+        <td>Intel(R) i5-9400 2.90GHz</td>
+        <td>9Gb</td>
+        <td>FOXLINE_FLSSD256X5 </td>
+        <td>SSD 256Gb</td>
+        <td>ALT Workstation 9.0</td>
+        <td>1051a2</td>
+        <td>unknown</td>
+        <td>530</td>
+        <td>pol1</td>
+      </tr>
+
+
+      <tr> 
+        <td>26.06.2026</td>
+        <td>10.67.64.8</td>
+        <td>00:58:3F:17:57:D6</td>
+        <td>Aquarius AQH310CM</td>
+        <td>Intel(R) i5-9400 2.90GHz</td>
+        <td>8Gb</td>
+        <td>FOXLINE_FLSSD256X5</td>
+        <td>SSD 256Gb</td>
+        <td>ALT Workstation 9.0</td>
+        <td>1051a2</td>
+        <td>unknown</td>
+        <td>~</td>
+        <td>pol1</td>
+      </tr>
+
+
+      <tr> 
+        <td>25.06.2026</td>
+        <td>10.67.22.105</td>
+        <td>00:58:3F:12:36:6D</td>
+        <td>Aquarius AQB365MC</td>
+        <td>Intel(R) i5-9400 2.90GHz</td>
+        <td>9Gb</td>
+        <td>FOXLINE_FLSSD256X5</td>
+        <td>SSD 256Gb</td>
+        <td>ALT Workstation 9.0</td>
+        <td>1051a2</td>
+        <td>unknown</td>
+        <td>247</td>
+        <td>pol1</td>
+      </tr>
+
+
+      <tr> 
+        <td>23.06.2026</td>
+        <td>192.168.36.31</td>
+        <td>00:58:3F:12:1D:48</td>
+        <td>Aquarius AQB365MC</td>
+        <td>Intel(R) i5-9400 2.90GHz</td>
+        <td>9Gb</td>
+        <td>FOXLINE_FLSSD256X5</td>
+        <td>SSD 256Gb</td>
+        <td>ALT Workstation 9.0</td>
+        <td>1051a2</td>
+        <td>unknown</td>
+        <td>5</td>
+        <td>stomat</td>
+      </tr>
+
+
+      <tr> 
+        <td>23.06.2026</td>
+        <td>192.168.36.25</td>
+        <td>18-C0-4D-CD-F6-5E</td>
+        <td>Gigabyte H410M H V3</td>
+        <td>Intel(R) i3-10105 3.70GHz</td>
+        <td>16Gb</td>
+        <td>Samsung SSD 870 EVO 500GB</td>
+        <td>465Gb</td>
+        <td>Windows 10 Pro</td>
+        <td>WS-036-025</td>
+        <td>unknown</td>
+        <td>5</td>
+        <td>stomat</td>
+      </tr>
+
+
+      <tr> 
+        <td>19.06.2026</td>
+        <td>10.67.38.58</td>
+        <td>10-FF-E0-63-ED-A8</td>
+        <td>Gigabyte H410M K</td>
+        <td>Intel(R) i3-10100 3.60GHz</td>
+        <td>16Gb</td>
+        <td>WD Blue SN5000 500GB</td>
+        <td>HDD 465Gb</td>
+        <td>Windows 10 Pro</td>
+        <td>WS-038-058</td>
+        <td>unknown</td>
+        <td>409</td>
+        <td>pol1</td>
+      </tr>
+
+
+      <tr> 
+        <td>18.06.2026</td>
+        <td>10.67.64.98</td>
+        <td>00:58:3F:17:6A:B2</td>
+        <td>Aquarius AQH310CM</td>
+        <td>Intel(R) i5-9400 2.90GHz</td>
+        <td>8Gb</td>
+        <td>FOXLINE_FLSSD256X5 </td>
+        <td>SSD 238Gb</td>
+        <td>ALT Workstation 9.0</td>
+        <td>1051a2</td>
+        <td>unknown</td>
+        <td>registr</td>
+        <td>pol1</td>
+      </tr>
+
+
+      <tr> 
+        <td>10.06.2026</td>
+        <td>10.67.64.92</td>
+        <td>00:58:3F:17:63:82</td>
+        <td>Aquarius AQH310CM</td>
+        <td>Intel(R) i5-9400 2.90GHz</td>
+        <td>8 Gb</td>
+        <td>FOXLINE_FLSSD256X5 OnlyDisk</td>
+        <td>SSD 238Gb</td>
+        <td>ALT Workstation 9.0</td>
+        <td>1051a2</td>
+        <td>unknown</td>
+        <td>330</td>
+        <td>pol1</td>
+      </tr>
+
+
+      <tr> 
+        <td>10.06.2026</td>
+        <td>10.67.64.38</td>
+        <td>00:58:3F:17:54:A4</td>
+        <td>Aquarius AQH310CM</td>
+        <td>Intel(R) i5-9400 2.90GHz</td>
+        <td>8Gb</td>
+        <td>FOXLINE_FLSSD256X5 </td>
+        <td>SSD 256Gb</td>
+        <td>ALT Workstation 9.0</td>
+        <td>1051a2</td>
+        <td>unknown</td>
+        <td>818</td>
+        <td>pol1</td>
+      </tr>
+
+
+      <tr> 
+        <td>10.06.2026</td>
+        <td>10.67.64.96</td>
+        <td>00:58:3F:0F:42:79</td>
+        <td>Aquarius AQB365MC</td>
+        <td>Intel(R) i5-9400 2.90GHz</td>
+        <td>8Gb</td>
+        <td>FOXLINE_FLSSD256X5</td>
+        <td>SSD 256Gb</td>
+        <td>ALT Workstation 9.0</td>
+        <td>1051a2</td>
+        <td>unknown</td>
+        <td>417</td>
+        <td>pol1</td>
+      </tr>
+
+
+      <tr> 
+        <td>08.06.2026</td>
+        <td>10.67.64.3</td>
+        <td>00:58:3F:17:62:CA</td>
+        <td>Aquarius AQH310CM</td>
+        <td>Intel(R) i5-9400 2.90GHz</td>
+        <td>8Gb</td>
+        <td>FOXLINE_FLSSD256X5 </td>
+        <td>238Gb</td>
+        <td>ALT Workstation 9.0</td>
+        <td>1051a2</td>
+        <td>unknown</td>
+        <td>312</td>
+        <td>uprav</td>
+      </tr>
+
+
+      <tr> 
+        <td>08.06.2026</td>
+        <td>192.168.0.129</td>
+        <td>38-D5-47-E1-3E-C6</td>
+        <td>ASUSTeK Z170-K</td>
+        <td>Intel(R) i7-6700K 4.00GHz</td>
+        <td>32Gb</td>
+        <td>TOSHIBA DT01ACA100</td>
+        <td>931Gb</td>
+        <td>Windows 10 IoT Enterprise</td>
+        <td>KOMPUTER</td>
+        <td>unknown</td>
+        <td>my</td>
+        <td>home</td>
+      </tr>
+
+
+      <tr> 
+        <td>05.06.2026</td>
+        <td>10.67.2.8</td>
+        <td>58-11-22-07-4E-DF</td>
+        <td>ASUSTeK PRIME H510M-K</td>
+        <td>Intel(R) i5-10400 2.90GHz</td>
+        <td>8Gb</td>
+        <td>ST500NM0011</td>
+        <td>SSD 465 Gb</td>
+        <td>Windows 10 Pro</td>
+        <td>WS-002-008</td>
+        <td>unknown</td>
+        <td>312 IGOR</td>
+        <td>uprav</td>
+      </tr>
+
+
+      <tr> 
+        <td>04.06.2026</td>
+        <td>10.67.2.33</td>
+        <td>18-C0-4D-D7-67-0E</td>
+        <td>Gigabyte H510M H</td>
+        <td>Intel(R) i3-10100 3.60GHz</td>
+        <td>8Gb</td>
+        <td>KINGSTON SA400S37480G</td>
+        <td>SSD 447 Gb</td>
+        <td>Windows 10 IoT Enterprise</td>
+        <td>KOMPUTER</td>
+        <td>unknown</td>
+        <td>312</td>
+        <td>uprav</td>
+      </tr>
+
+
+      <tr> 
+        <td>05.06.2026</td>
+        <td>192.168.36.34</td>
+        <td>00:58:3F:12:37:A7</td>
+        <td>Aquarius AQB365MC</td>
+        <td>Intel(R) i5-9400 2.90GHz</td>
+        <td>8Gb</td>
+        <td>FOXLINE_FLSSD256X5</td>
+        <td>SSD 256</td>
+        <td>ALT Workstation 9.0</td>
+        <td>1051a2</td>
+        <td>unknown</td>
+        <td>4</td>
+        <td>stomatology</td>
+      </tr>
+
+
+      <tr> 
+        <td>05.06.2026</td>
+        <td>10.67.11.32</td>
+        <td>00:58:3F:0D:24:AD</td>
+        <td>ASUSTeK PRIME B365M-C</td>
+        <td>Intel(R) i5-9400 2.90GHz </td>
+        <td>8Gb</td>
+        <td>FOXLINE FLSSD256X5</td>
+        <td>SSD 256Gb</td>
+        <td>ALT Workstation 10.4</td>
+        <td>dpk5324</td>
+        <td>unknown</td>
+        <td>312</td>
+        <td>uprav</td>
+      </tr>
+
+
+      <tr> 
+        <td>04.06.2026</td>
+        <td>192.168.0.172</td>
+        <td>2C:56:DC:DB:90:05</td>
+        <td>ASUSTeK A68HM-K</td>
+        <td>AMD Athlon(tm) X2 340</td>
+        <td>6Gb</td>
+        <td>TOSHIBA DT01ACA100</td>
+        <td>HDD 1000Gb</td>
+        <td>CentOS Stream 9</td>
+        <td>localhost</td>
+        <td>unknown</td>
+        <td>sleep</td>
+        <td>home</td>
+      </tr>
+
+
+      <tr> 
+        <td>22.05.2026</td>
+        <td>10.67.40.20</td>
+        <td>00:58:3f:12:36:42</td>
+        <td>Aquarius AQB365MC</td>
+        <td>Intel(R) i5-9400 2.90GHz</td>
+        <td>8GGb</td>
+        <td>FOXLINE_FLSSD256X5</td>
+        <td>SSD 256Gb</td>
+        <td>ALT Workstation 9.0</td>
+        <td>unknown</td>
+        <td>unknown</td>
+        <td>6</td>
+        <td>tuber</td>
+      </tr>
+
+
+      <tr> 
+        <td>22.05.2026</td>
+        <td>10.67.40.17</td>
+        <td>00:58:3f:12:36:49</td>
+        <td>Aquarius AQB365MC</td>
+        <td>Intel(R) i5-9400 2.90GHz</td>
+        <td>8Gb</td>
+        <td>FOXLINE_FLSSD256X5 </td>
+        <td>SSD 256Gb</td>
+        <td>ALT Workstation 9.0</td>
+        <td>unknown</td>
+        <td>unknown</td>
+        <td>8</td>
+        <td>tuber</td>
+      </tr>
+
+
+      <tr> 
+        <td>08.05.2026</td>
+        <td>10.67.64.62</td>
+        <td>00:58:3f:17:59:a3</td>
+        <td>Aquarius AQH310CM</td>
+        <td>Intel(R) i5-9400 2.90GHz</td>
+        <td>8Gb</td>
+        <td>FOXLINE_FLSSD256X5</td>
+        <td>256 GB/238 GiB</td>
+        <td>ALT Workstation 9.0</td>
+        <td>unknown</td>
+        <td>unknown</td>
+        <td>316</td>
+        <td>pol1</td>
+      </tr>
+
+
+      <tr> 
+        <td>06.05.2026</td>
+        <td>192.168.0.139</td>
+        <td>unknown</td>
+        <td>ASRock J3355M</td>
+        <td>Intel(R) J3355 2.00GHz </td>
+        <td>6Gb</td>
+        <td>WDC WD5000BPVT-2</td>
+        <td>500 GB/466 GiB</td>
+        <td>ALT Workstation 8.2</td>
+        <td>home-comp</td>
+        <td>unknown</td>
+        <td>sleep</td>
+        <td>home</td>
+      </tr>
+
+
+
+    </tbody>
+  </table>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const rows = document.querySelectorAll("#myTable tbody tr");
+  let windowsCount = 0;
+  let linuxCount = 0;
+  let hddCount = 0;
+  let ssdCount = 0;
+  let i3Count = 0;
+  let i5Count = 0;
+  let i7Count = 0;
+  let i9Count = 0;
+  let amdCount = 0;
+
+  rows.forEach(row => {
+    const cells = row.querySelectorAll("td");
+    if (cells.length < 9) return;
+
+    // ОС — 9‑й столбец (индекс 8)
+    const osText = cells[8].textContent.trim().toLowerCase();
+    if (osText.includes("windows") || osText.includes("win")) {
+      windowsCount++;
+    } else if (osText.includes("linux") || osText.includes("alt") || osText.includes("astra") || osText.includes("centos") || osText.includes("ubuntu")) {
+      linuxCount++;
+    }
+
+    // Тип диска — 8‑й столбец (индекс 7)
+    const diskText = cells[7].textContent.trim().toUpperCase();
+    if (diskText.includes("SSD")) {
+      ssdCount++;
+      cells[7].classList.add("ssd");
+    } else if (diskText.includes("HDD")) {
+      hddCount++;
+      cells[7].classList.add("hdd");
+    }
+
+    // Процессор — 5‑й столбец (индекс 4)
+    const cpuText = cells[4].textContent.trim().toUpperCase();
+
+    if (cpuText.includes("I3")) {
+      i3Count++;
+      cells[4].classList.add("cpu-i3");
+    } else if (cpuText.includes("I5")) {
+      i5Count++;
+      cells[4].classList.add("cpu-i5");
+    } else if (cpuText.includes("I7")) {
+      i7Count++;
+      cells[4].classList.add("cpu-i7");
+    } else if (cpuText.includes("I9")) {
+      i9Count++;
+      cells[4].classList.add("cpu-i9");
+    } else if (cpuText.includes("AMD")) {
+      amdCount++;
+      cells[4].classList.add("cpu-amd");
+    }
+  });
+
+  // Обновляем заранее созданные элементы статистики
+  const totalEl = document.getElementById("total-count");
+  if (totalEl) totalEl.textContent = rows.length;
+
+  const winEl = document.getElementById("win-count");
+  if (winEl) winEl.textContent = windowsCount;
+
+  const linuxEl = document.getElementById("linux-count");
+  if (linuxEl) linuxEl.textContent = linuxCount;
+
+  const i3El = document.getElementById("i3-count");
+  if (i3El) i3El.textContent = i3Count;
+
+  const i5El = document.getElementById("i5-count");
+  if (i5El) i5El.textContent = i5Count;
+
+  const i7El = document.getElementById("i7-count");
+  if (i7El) i7El.textContent = i7Count;
+
+  const i9El = document.getElementById("i9-count");
+  if (i9El) i9El.textContent = i9Count;
+
+  const amdEl = document.getElementById("amd-count");
+  if (amdEl) amdEl.textContent = amdCount;
+});
+</script>
+</body>
+</html>

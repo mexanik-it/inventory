@@ -1,0 +1,75 @@
+#include "main.h"
+#include <iostream>
+#include <sys/ioctl.h>
+#include <linux/fs.h>
+
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <linux/fs.h>
+#include <vector>
+
+/***************************************************************************************************/
+/* возвращает общий объём жесткого диска                                                           */
+/***************************************************************************************************/
+
+bool getDiskTotalSize(const std::string& device, int& sizeGB) {
+  string path = "/sys/block/" + device + "/size";
+  ifstream file(path);
+  if (!file.is_open()) {
+        std::cerr << "Не удалось открыть " << path << std::endl;
+        return false;
+        }
+
+  unsigned long long sectors;
+  file >> sectors;
+  file.close();
+
+  // Размер в ГБ: сектора × 512 байт / 1024³
+  sizeGB = static_cast<double>(sectors * 512) / (1024 * 1024 * 1024);
+  return true;
+}
+
+std::string getDiskType(const std::string& device) {
+  std::string path = "/sys/block/" + device + "/queue/rotational";
+  std::ifstream file(path);
+  std::string value;
+
+  if (file.is_open()) {
+    file >> value;
+    file.close();
+    if (value == "0") {
+        return "SSD";
+        } else if (value == "1") {
+        return "HDD";
+        }
+    }
+  return "Unknown";
+}
+
+bool TInventory::get_hdd_size( ) {
+  int sizeGB;
+  std::vector<std::string> disks = {"sda", "sdb"}; // "sda", "sdb", "nvme0n1" Замените на актуальные имена дисков
+
+//    for (const auto& disk : disks) {
+//            std::cout << "Disk " << disk << ": " << getDiskType(disk) << std::endl;
+//                }
+
+  id_hdd_size = getDiskType("sda");
+  id_hdd_size += " ";
+  if ( getDiskTotalSize("sda", sizeGB) ) {
+//        id_hdd_size += getDiskType("sda");
+        id_hdd_size += to_string(sizeGB);
+        id_hdd_size += "Gb";
+        return true;
+        }
+  id_hdd_size = getDiskType("sdb");
+  if ( getDiskTotalSize("sdb", sizeGB) ) {
+//        id_hdd_size += getDiskType("sdb");
+        id_hdd_size += to_string(sizeGB);
+        id_hdd_size += "Gb";
+        return true;
+        }
+
+  return false;
+}

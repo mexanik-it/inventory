@@ -1,0 +1,38 @@
+# Имя исполняемого файла (добавляем .exe для Windows)
+TARGET = ./inventory.exe
+
+# Компилятор и флаги
+CXX = g++
+CXXFLAGS = -Wall -Wextra -std=c++11
+
+# Флаги линковки: библиотеки ТОЛЬКО в конце
+LDFLAGS = -static -static-libstdc++ -lws2_32 -lwininet
+
+# Исходные файлы
+SRCS = main.cpp added.cpp get_mb.cpp get_cpu.cpp           \
+       get_mem.cpp get_ip.cpp get_host.cpp get_prn.cpp     \
+       get_mac.cpp get_hdd.cpp get_other.cpp               \
+       get_sys.cpp get_hdd_size.cpp get_filename.cpp       \
+       write_to_file.cpp write_to_ftp.cpp write_to_lan.cpp \
+       TInventory.cpp
+
+# Объектные файлы
+OBJS = $(SRCS:.cpp=.o)
+
+# Правило сборки исполняемого файла
+$(TARGET): $(OBJS)
+	$(CXX) $(OBJS) -o $(TARGET) $(LDFLAGS)
+
+# Правило компиляции .cpp -> .o
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Запуск (работает в cmd, Git Bash, PowerShell)
+run: $(TARGET)
+	./$(TARGET)
+
+# Очистка
+clean:
+	del /q $(OBJS) 
+	@echo All clean done.
+	@echo ~~~~~~~~~~~~~~~~

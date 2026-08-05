@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Макет страницы</title>
+    <style>
+        /* Общие стили */
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --bg-color: #f8fafc;
+            --text-color: #1f2937;
+            --card-bg: #ffffff;
+            --border-radius: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+
+        /* Шапка */
+        header {
+            background: var(--card-bg);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        nav ul {
+            display: flex;
+            gap: 24px;
+        }
+
+        nav a:hover {
+            color: var(--primary-color);
+        }
+
+        /* Главный экран */
+        .hero {
+            padding: 4rem 0;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: #6b7280;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 24px;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--secondary-color);
+        }
+
+        /* Секция карточек */
+        .features {
+            padding: 3rem 0;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .card h3 {
+            margin-bottom: 0.75rem;
+            color: var(--secondary-color);
+        }
+
+        /* Футер */
+        footer {
+            background: #111;
+            color: #9ca3af;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+
+        .footer-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .header-inner {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            nav ul {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-inner">
+            <a href="#" class="logo">Inventory</a>
+            <nav>
+                <ul>
+                    <li><a href="#">Главная</a></li>
+                    <li><a href="#">О нас</a></li>
+                    <li><a href="#">Услуги</a></li>
+                    <li><a href="#">Контакты</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>Руководство пользователя</h1>
+                <p>Как пользоваться комплексом Inventory на операционках Windows и Linux.</p>
+                <a href="#features" class="btn">Узнать больше</a>
+            </div>
+        </section>
+
+        <section id="features" class="features">
+            <div class="container">
+                <h2 class="section-title">Наши преимущества</h2>
+                <div class="cards-grid">
+                    <article class="card">
+                        <h3>Везде</h3>
+                        <p>Можно не применять переносные накопители, типа USB, нужен только Internet.</p>
+                    </article>
+                    <article class="card">
+                        <h3>OS</h3>
+                        <p>И на Windows и на Linux. Даже с защищёнными USB портами и разными рода SecretNet.</p>
+                    </article>
+                    <article class="card">
+                        <h3>Простота</h3>
+                        <p>Лёгкий код без лишних зависимостей и сторонних библиотек.</p>
+                    </article>
+                </div>
+<div>dsjfskjsl</div>
+                <div class="cards-grid">
+                    <article class="card">
+                        <h3>Везде</h3>
+                        <p>Можно не применять переносные накопители, типа USB, нужен только Internet.</p>
+                    </article>
+                    <article class="card">
+                        <h3>OS</h3>
+                        <p>И на Windows и на Linux. Даже с защищёнными USB портами и разными рода SecretNet.</p>
+                    </article>
+                    <article class="card">
+                        <h3>Простота</h3>
+                        <p>Лёгкий код без лишних зависимостей и сторонних библиотек.</p>
+                    </article>
+                </div>
+fsfsdfsdfsd
+            </div>
+        </section>
+23453543454
+    </main>
+
+    <footer>
+        <div class="container footer-inner">
+            <p>&copy; 2024 MySite. Все права защищены.</p>
+            <p>Сделано для демонстрации макета HTML+CSS.</p>
+        </div>
+    </footer>
+</body>
+</html>
+

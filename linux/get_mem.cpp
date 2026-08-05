@@ -1,0 +1,31 @@
+#include "main.h"
+#include <cmath>
+#include <sys/sysinfo.h>   // обязательно: объявление sysinfo
+
+/***************************************************************************************************/
+/* возвращает общее количество оперативной памяти в Gb                                             */
+/***************************************************************************************************/
+
+namespace {
+int normalize_ram_gb(int raw) {
+    constexpr int sizes[] = { 2, 4, 6, 8, 10, 12, 16, 18, 20, 24, 28, 32, 48, 64, 96 };
+    for (int s : sizes) {
+        if (raw <= s) return s;
+    }
+    return raw; // если больше всех известных
+}
+}
+
+bool TInventory::get_mem() {
+    struct sysinfo info{};
+    if (sysinfo(&info) != 0) {
+        perror("sysinfo failed");
+        return false;
+    }
+
+    const double ram_gb_raw = static_cast<double>(info.totalram) / 1'000'000.0 / 1000;
+    int total_gb = normalize_ram_gb(static_cast<int>(std::round(ram_gb_raw)));
+
+    id_mem = std::to_string(total_gb) + "GB";
+    return true;
+}

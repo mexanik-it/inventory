@@ -1,0 +1,46 @@
+#include <iostream>
+#include <cstdio>
+#include "main.h"
+
+#include <windows.h>
+#include <winioctl.h>
+#include <iostream>
+//#pragma comment(lib, "wbemuuid.lib")
+//#pragma comment(lib, "ole32.lib")
+//#pragma comment(lib, "oleaut32.lib")
+
+/***************************************************************************************************/
+/* возвращает общий объём жесткого диска                                                           */
+/***************************************************************************************************/
+
+bool TInventory::get_hdd_size() {
+  int hdd_size;
+  FILE * pipe = _popen("wmic diskdrive get size", "r");
+  if (!pipe) {
+    std::cerr << "The wmic command could not be executed ..." << endl;
+    return 1;
+  }
+
+  char buffer[128];
+  std::string result;
+  while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+    result += buffer;
+  }
+  _pclose(pipe);
+
+  // Парсим вывод (пропускаем заголовок и пустые строки)
+  size_t pos = result.find_first_of("0123456789");
+  if (pos != std::string::npos) {
+    std::string sizeStr = result.substr(pos);
+    sizeStr.erase(sizeStr.find_last_not_of(" \t\n\r") + 1);
+    unsigned long long sizeBytes = std::stoull(sizeStr);
+    hdd_size = (int)(sizeBytes / (1024 * 1024 * 1024));
+    //id_hdd_size = detectWithPowerShell();
+    id_hdd_size += to_string(hdd_size);
+    id_hdd_size += "Gb";
+  } else {
+    cerr << "Couldn't find the disk size wmic" << endl;
+    return false;
+  }
+  return true;
+}

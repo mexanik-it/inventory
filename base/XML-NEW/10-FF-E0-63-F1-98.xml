@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+  <inventory>
+	<id_date>30.07.2026</id_date>
+	<id_mb>Gigabyte H410M K</id_mb>
+	<id_cpu>Intel i3-10100 3.60GHz</id_cpu>
+	<id_mem>16Gb</id_mem>
+	<id_hdd>SSD</id_hdd>
+	<id_hdd_size>SSD 440Gb</id_hdd_size>
+	<id_sys>Windows 10 Pro</id_sys>
+	<id_prn>HP LaserJet Pro MFP 4103</id_prn>
+	<id_host>WS-016-052</id_host>
+	<id_ip>127.0.0.1</id_ip>
+	<id_mac>10:FF:E0:63:F1:98</id_mac>
+	<id_office>zav</id_office>
+	<id_structure>pblock</id_structure>
+  </inventory>

@@ -1,0 +1,113 @@
+﻿import os
+import xml.etree.ElementTree as ET
+from pathlib import Path
+from openpyxl import load_workbook
+from tqdm import tqdm
+
+# --- НАСТРОЙКИ ---
+XML_FOLDER = "XML"                # папка с XML-файлами
+XLSX_FILE = "list-points.xlsx"    # целевой Excel-файл
+START_ROW = 12                    # строка, куда вставляем первую новую запись (нумерация с 1)
+
+def parse_xml(file_path: Path) -> dict | None:
+    """
+    Парсит XML и возвращает словарь с нужными полями.
+    Возвращает None, если файл невалиден или структура не совпадает.
+    """
+    try:
+        tree = ET.parse(file_path)
+        root = tree.getroot()
+
+        # Проверка, что корневой элемент — inventory
+        if root.tag != "inventory":
+            return None
+
+        def get_text(tag: str) -> str:
+            elem = root.find(tag)
+            return elem.text.strip() if elem is not None and elem.text else ""
+
+        data = {
+            "id_date": get_text("id_date"),
+            "id_mb": get_text("id_mb"),
+            "id_cpu": get_text("id_cpu"),
+            "id_mem": get_text("id_mem"),
+            "id_hdd": get_text("id_hdd"),
+            "id_hdd_size": get_text("id_hdd_size"),
+            "id_sys": get_text("id_sys"),
+            "id_prn": get_text("id_prn"),
+            "id_host": get_text("id_host"),
+            "id_ip": get_text("id_ip"),
+            "id_mac": get_text("id_mac"),
+            "id_office": get_text("id_office"),
+            "id_structure": get_text("id_structure"),
+        }
+        return data
+    except Exception:
+        return None
+
+def main():
+    xml_folder = Path(XML_FOLDER)
+    xlsx_path = Path(XLSX_FILE)
+
+    # Проверка наличия папки и файлов
+    if not xml_folder.exists():
+        print(f"Папка '{xml_folder}' не найдена.")
+        return
+
+    xml_files = [f for f in xml_folder.iterdir() if f.suffix.lower() in (".xml", ".XML")]
+    if not xml_files:
+        print("В папке XML нет файлов .xml")
+        return
+
+    if not xlsx_path.exists():
+        print(f"Файл '{xlsx_path}' не найден.")
+        return
+
+    wb = load_workbook(xlsx_path)
+    ws = wb.active  # берём активный лист
+
+    # Порядок колонок (должен соответствовать порядку столбцов в Excel)
+    columns_order = [
+        "id_date",
+        "id_ip",
+        "id_mac",
+        "id_mb",
+        "id_cpu",
+        "id_mem",
+        "id_hdd",
+        "id_hdd_size",
+        "id_sys",
+        "id_host",
+        "id_prn",
+        "id_office",
+        "id_structure",
+    ]
+
+    success_count = 0
+    fail_count = 0
+
+    # Прогресс-бар
+    for xml_file in tqdm(xml_files, desc="Обработка XML"):
+        data = parse_xml(xml_file)
+        if data is None:
+            fail_count += 1
+            continue
+
+        # Вставляем строку на позицию START_ROW (сдвиг вниз)
+        ws.insert_rows(START_ROW)
+
+        # Заполняем вставленную строку
+        for col_idx, key in enumerate(columns_order, start=1):
+            ws.cell(row=START_ROW, column=col_idx, value=data[key])
+
+        success_count += 1
+
+    wb.save(xlsx_path)
+
+    print("\n--- Статистика ---")
+    print(f"Всего файлов: {len(xml_files)}")
+    print(f"Успешно обработано: {success_count}")
+    print(f"Не удалось обработать: {fail_count}")
+
+if __name__ == "__main__":
+    main()
