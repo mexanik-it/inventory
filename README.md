@@ -92,31 +92,6 @@
 концепция меняется - делимся на две ветки [ Windows ] и [ Linux ]
 
 
-## Добавьте свои файлы
-Если вы решили начать разработку проекта с создания репозитория в нашем сервисе, тогда клонируйте себе данный репозиторий следующим образом:
-
-
-```
-git clone https://gitflic.ru/project/mexanik-it/inventory.git
-cd inventory
-**добавьте первые файлы вашего проекта**
-git add .
-git commit -m "Первый коммит"
-git push -u origin master
-```
-
-Уже что-то делали в проекте? В таком случае инициализируйте гит-репозиторий в корне проекта и добавьте текущий репозиторий как удалённый репозиторий:
-
-```
-cd existing_folder
-git init
-git remote add origin https://gitflic.ru/project/mexanik-it/inventory.git
-git clone
-**добавьте новые файлы**
-git add .
-git commit -m "Новый коммит"
-git push -u origin master
-```
 ***
 
 
@@ -152,52 +127,36 @@ git push -u origin master
 
 ***
 
-## Работа с проектом
+## Работа с проектом из консоли CLI
 
-- [ ] [Как создать проект](https://docs.gitflic.ru/project/project_create)
-- [ ] [Как импортировать проект](https://docs.gitflic.ru/project/import_base)
-- [ ] [Запросы на слияние](https://docs.gitflic.ru/project/merge_request)
-- [ ] [Зеркалирование проекта](https://docs.gitflic.ru/project/mirror)
-- [ ] [Импортировать проект с GitLab](https://docs.gitflic.ru/project/import)
+### Добавьте свои файлы
+Если вы решили начать разработку проекта с создания репозитория в нашем сервисе, 
+тогда клонируйте себе данный репозиторий следующим образом:
 
-## Команды
-- [ ] [Создание команды](https://docs.gitflic.ru/team/create)
-- [ ] [Обзор команды](https://docs.gitflic.ru/team/view)
-- [ ] [Настройка команды](https://docs.gitflic.ru/team/settings)
+```
+git clone https://gitflic.ru/project/mexanik-it/inventory.git
+cd inventory
+**добавьте первые файлы вашего проекта**
+git add .
+git commit -m "Первый коммит & update"
+git push -u origin master
+```
 
-## Реестр пакетов
-- [ ] [Реестр пакетов](https://docs.gitflic.ru/registry/package)
-- [ ] [PyPi](https://docs.gitflic.ru/registry/pypi_registry)
-- [ ] [Generic](https://docs.gitflic.ru/registry/generic_registry)
-- [ ] [Maven](https://docs.gitflic.ru/registry/maven_registry)
-- [ ] [Docker](https://docs.gitflic.ru/registry/docker)
+### создать <b>tag</b>
+```
+git tag -a v1.0.0 -m "Релиз версии 1.0.0"
+git tag -a v1.0.0 -m "Release version 1.0.0"
+```
 
-## Компании
-- [ ] [Создание компании](https://docs.gitflic.ru/company/create)
-- [ ] [Обзор компании](https://docs.gitflic.ru/company/view)
-- [ ] [Тарифы и оплата](https://docs.gitflic.ru/company/price)
-- [ ] [Запуск агента компании](https://docs.gitflic.ru/company/saas_runner_setup)
-
-## CI/CD
-- [ ] [Что такое GitFlic CI/CD](https://docs.gitflic.ru/cicd/introduction)
-- [ ] [Задача (Job)](https://docs.gitflic.ru/cicd/job)
-- [ ] [Конвейер (pipeline)](https://docs.gitflic.ru/cicd/pipeline)
-- [ ] [Агенты](https://docs.gitflic.ru/cicd/agent)
-- [ ] [Справочник для .yaml файла](https://docs.gitflic.ru/cicd/gitflic-ci-yaml)
-
-## API
-- [ ] [Введение в GitFlic API](https://docs.gitflic.ru/api/intro)
-- [ ] [Методы для администратора](https://docs.gitflic.ru/api/admin)
-- [ ] [Получение access токена](https://docs.gitflic.ru/api/access-token)
-
-
-## Панель администратора
-- [ ] [Панель администратора](https://docs.gitflic.ru/admin_panel/intro)
-- [ ] [Панель управления](https://docs.gitflic.ru/admin_panel/dashboard)
-- [ ] [Настройка LDAP](https://docs.gitflic.ru/admin_panel/ldap)
-- [ ] [Ключевые настройки](https://docs.gitflic.ru/admin_panel/settings)
-
-## Общая информация
-- [ ] [Глоссарий](https://docs.gitflic.ru/common/gloss)
-- [ ] [Права доступа ролей](https://docs.gitflic.ru/common/manage_roles)
-- [ ] [Вебхуки](https://docs.gitflic.ru/common/webhook)
+### создать <b>release</b>
+```
+git release create v1.0.0 --title "Версия 1.0.0" --notes "Описание изменений"
+```
+Аргументы: \
+v1.0.0 — тег, на основе которого создаётся релиз; \
+    --title — название релиза; \
+    --notes — заметки о выпуске.  \
+ 
+docs.github.com  \
+Также можно указать --prerelease для предварительной версии. \
+docs.github.com  \
