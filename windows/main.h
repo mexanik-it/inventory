@@ -88,8 +88,8 @@ public: // спецификатор доступа public
 
 //private: // спецификатор доступа private
 
-  bool get_mb  ( );
-  bool get_cpu ( );
+  bool get_mb     ( ); /* получение названия материнской платы         */
+  bool get_cpu    ( ); /* получение названия процессора                */
   bool get_mem ( );
   bool get_ip  ( );
   bool get_mac ( );

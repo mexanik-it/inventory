@@ -1,12 +1,12 @@
 TARGET = inventory.exe
 CXX = g++
 CXXFLAGS = -Wall -Wextra -std=c++20
-LDFLAGS = -static -static-libstdc++ -lws2_32 -lwininet -lwinspool
+LDFLAGS = -static -static-libstdc++ -lws2_32 -lwininet -lwinspool -lole32 -loleaut32 -lwbemuuid
 
 SRCS = main.cpp added.cpp get_mb.cpp get_cpu.cpp           \
        get_mem.cpp get_ip.cpp get_host.cpp get_prn.cpp     \
        get_mac.cpp get_hdd.cpp get_other.cpp               \
-       get_sys.cpp  get_filename.cpp       \
+       get_sys.cpp  get_filename.cpp   \
        write_to_file.cpp write_to_ftp.cpp write_to_lan.cpp \
        TInventory.cpp
 

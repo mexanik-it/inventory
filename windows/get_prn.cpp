@@ -74,5 +74,5 @@ bool TInventory::get_prn() {
         }
     }
 
-    return false; // Не опознан
+    return true; // Не опознан
 }

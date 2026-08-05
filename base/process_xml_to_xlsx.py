@@ -10,7 +10,7 @@ from colorama import Fore, Style, init
 init(autoreset=True)
 
 # --- НАСТРОЙКИ ---
-XML_FOLDER = "XML"                # папка с XML-файлами
+XML_FOLDER = "XML-NEW"            # папка с XML-файлами
 XLSX_FILE = "list-points.xlsx"    # целевой Excel-файл
 HTML_FILE = "list-points.html"    # целевой HTML-файл
 START_ROW = 11                    # строка, куда вставляем первую новую запись (нумерация с 1)
@@ -111,21 +111,21 @@ def append_html_table_rows(html_path: Path, rows_data: list[dict]):
     html_rows = []
     for row in rows_data:
         html_row = (
-            f'<tr>'
-            f'<td>{row.get("id_date", "")}</td>'
-            f'<td>{row.get("id_ip", "")}</td>'
-            f'<td>{row.get("id_mac", "")}</td>'
-            f'<td>{row.get("id_mb", "")}</td>'
-            f'<td>{row.get("id_cpu", "")}</td>'
-            f'<td>{row.get("id_mem", "")}</td>'
-            f'<td>{row.get("id_hdd", "")}</td>'
-            f'<td>{row.get("id_hdd_size", "")}</td>'
-            f'<td>{row.get("id_sys", "")}</td>'
-            f'<td>{row.get("id_host", "")}</td>'
-            f'<td>{row.get("id_prn", "")}</td>'
-            f'<td>{row.get("id_office", "")}</td>'
-            f'<td>{row.get("id_structure", "")}</td>'
-            f'</tr>\n'
+            f'\n      <tr>\n'
+            f'        <td>{row.get("id_date", "")}</td>\n'
+            f'        <td>{row.get("id_ip", "")}</td>\n'
+            f'        <td>{row.get("id_mac", "")}</td>\n'
+            f'        <td>{row.get("id_mb", "")}</td>\n'
+            f'        <td>{row.get("id_cpu", "")}</td>\n'
+            f'        <td>{row.get("id_mem", "")}</td>\n'
+            f'        <td>{row.get("id_hdd", "")}</td>\n'
+            f'        <td>{row.get("id_hdd_size", "")}</td>\n'
+            f'        <td>{row.get("id_sys", "")}</td>\n'
+            f'        <td>{row.get("id_host", "")}</td>\n'
+            f'        <td>{row.get("id_prn", "")}</td>\n'
+            f'        <td>{row.get("id_office", "")}</td>\n'
+            f'        <td>{row.get("id_structure", "")}</td>\n'
+            f'      </tr>\n'
         )
         html_rows.append(html_row)
 

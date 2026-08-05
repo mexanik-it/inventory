@@ -90,19 +90,19 @@ bool TInventory::print_id( void ) { // функция (метод класса) 
     }
 */
     std::cout << endl
-        << "==> curr-date:\t"    << id_print( id_date ) 
-        << "==> mother:\t"       << id_print( id_mb )
-        << "==> proc:\t"         << id_print( id_cpu )
-        << "==> memory:\t"       << id_print( id_mem )
-        << "==> ip-addr:\t"      << id_print( id_ip )
-        << "==> ip-mac:\t"       << id_print( id_mac )
-        << "==> hard disk:\t"    << id_print( id_hdd )
-        << "==> hard size:\t"    << id_print( id_hdd_size )
-        << "==> host:\t"         << id_print( id_host )
-        << "==> system:\t"       << id_print( id_sys )
-        << "==> printer:\t"      << id_print( id_prn )
-        << "==> filename:\t"     << id_print( id_filename )
-        << "==> office:\t"       << id_print( id_office )
+        << "==> curr-date:\t"    << id_print( id_date      ) 
+        << "==> mother:\t"       << id_print( id_mb        )
+        << "==> proc:\t"         << id_print( id_cpu       )
+        << "==> memory:\t"       << id_print( id_mem       )
+        << "==> ip-addr:\t"      << id_print( id_ip        )
+        << "==> ip-mac:\t"       << id_print( id_mac       )
+        << "==> hard disk:\t"    << id_print( id_hdd       )
+        << "==> hard size:\t"    << id_print( id_hdd_size  )
+        << "==> host:\t"         << id_print( id_host      ) 
+        << "==> system:\t"       << id_print( id_sys       )
+        << "==> printer:\t"      << id_print( id_prn       )
+        << "==> filename:\t"     << id_print( id_filename  )
+        << "==> office:\t"       << id_print( id_office    )
         << "==> structure:\t"    << id_print( id_structure ) << "\n"
         << std::flush;
 

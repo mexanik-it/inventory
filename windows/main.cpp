@@ -17,6 +17,16 @@ void SetConsoleSize(int cols, int lines) {
     SetConsoleWindowInfo(hOut, TRUE, &windowRect);
 }
 
+void enable_vt_mode() {
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (hOut == INVALID_HANDLE_VALUE) return;
+
+    DWORD dwMode = 0;
+    if (!GetConsoleMode(hOut, &dwMode)) return;
+    dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+    SetConsoleMode(hOut, dwMode);
+}
+
 using namespace std;
 
 /*------------------------------------------------------------------------------------------------------*/
@@ -42,6 +52,7 @@ int main ( ) {
 
   /* clean screen */
   system ( "cls" );
+  enable_vt_mode();
 
   /* SetConsoleOutputCP(1251); */
   setlocale ( LC_ALL, "Russian" );
@@ -67,8 +78,8 @@ int main ( ) {
   if( askYesNo ( "Transfer report to ftp-server...: " ) )
       inv.write_to_ftp ( );
 
-//  if( askYesNo ( "Copy report to local base: " ) )
-//      inv.write_to_lan ( );
+  if( askYesNo ( "Copy report to local base: " ) )
+      inv.write_to_lan ( );
 
 //  inv.delete_file ( );
 

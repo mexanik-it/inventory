@@ -26,7 +26,7 @@ bool TInventory::write_to_file() {
           << "\t<id_ip>"        << id_ip         << "</id_ip>\n"
           << "\t<id_mac>"       << id_mac        << "</id_mac>\n"
           << "\t<id_office>"    << id_office     << "</id_office>\n"
-          << "\t<id_structure>" << id_structure  << "</id_structure>\n"
+          << "\t<id_structure>" << id_structure  << "</id_structure>\n\n"
           << "  </inventory>\n";
 
     // close() вызывается автоматически в деструкторе, но можно оставить для ясности

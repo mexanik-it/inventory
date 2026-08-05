@@ -6,11 +6,11 @@
 	<id_mem>8GB</id_mem>
 	<id_hdd>QUMO_SSD </id_hdd>
 	<id_hdd_size>SSD 120Gb</id_hdd_size>
-	<id_sys>ALT 8 SP Workstation (cliff)</id_sys>
+	<id_sys>ALT 8 SP Workstation</id_sys>
 	<id_prn>samsung4833</id_prn>
-	<id_host>comp-pentium-gold-002096</id_host>
+	<id_host>002096</id_host>
 	<id_ip>10.67.28.69</id_ip>
 	<id_mac>F8:CC:6E:00:4F:13</id_mac>
 	<id_office>314</id_office>
-	<id_structure>d.pol</id_structure>
+	<id_structure>det.pol</id_structure>
 </inventory>
