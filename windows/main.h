@@ -20,6 +20,9 @@
 //bool askYesNo( const std::string& prompt );
 bool askYesNo(const std::string& prompt, const std::string& exit_command = "quit");
 
+// вертикальное меню выбор курсором + Enter
+int show_menu(const std::vector<std::string>& items, int start_x, int start_y);
+
 // замена одного символа в строке
 char *replace( char *src, int replaceme, int newchar );
 
