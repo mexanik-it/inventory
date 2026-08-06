@@ -37,7 +37,7 @@ curl -i -T ..\inventory-"%dt%".lha -u dimon ftp://86.110.167.86/ftp/_inventory/
 echo [0m
 echo.
 
-copy -V -Y "\\10.67.1.36\oit_techbase\list-points\list-points.html" "\\10.67.1.36\oit_techbase\list-points\list-points.html.bak"
-copy -V -Y "\\10.67.1.36\oit_techbase\list-points\list-points.xls" "\\10.67.1.36\oit_techbase\list-points\list-points.xls.bak"
+::copy -V -Y "\\10.67.1.36\oit_techbase\list-points\list-points.html" "\\10.67.1.36\oit_techbase\list-points\list-points.html.bak"
+::copy -V -Y "\\10.67.1.36\oit_techbase\list-points\list-points.xls" "\\10.67.1.36\oit_techbase\list-points\list-points.xls.bak"
                                                   
 pause
