@@ -4,18 +4,23 @@
 /* возвращает запрашивает номер кабинета и название здания                                         */
 /***************************************************************************************************/
 
-bool TInventory::get_other( ) {
+std::vector<std::string> menu = {
+    "Старшая сестра",
+    "Заведующая",
+    "Ординаторская",
+    "Остальное..."
+};
 
-  std::string full_name;
+bool TInventory::get_other()
+{
 
-  std::cout << "Enter number of the room: ";
-  getline( std::cin, id_office );
+    std::string full_name;
 
-  std::cout << "Enter the building: ";
-  getline( std::cin, id_structure );
+    std::cout << "Enter number of the room: ";
+    getline(std::cin, id_office);
 
-  return true;
+    std::cout << "Enter the building: ";
+    getline(std::cin, id_structure);
 
+    return true;
 }
-
-
