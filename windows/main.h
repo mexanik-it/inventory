@@ -21,7 +21,8 @@
 bool askYesNo(const std::string& prompt, const std::string& exit_command = "quit");
 
 // вертикальное меню выбор курсором + Enter
-int show_menu(const std::vector<std::string>& items, int start_x, int start_y);
+int show_menu_v(const std::vector<std::string>& items, int start_x, int start_y);
+int show_menu_h(const std::vector<std::string>& items, int row);
 
 // замена одного символа в строке
 char *replace( char *src, int replaceme, int newchar );
@@ -36,7 +37,18 @@ void checkHostEntry(struct hostent * hostentry);
 // to dotted-decimal format
 void checkIPbuffer(char *IPbuffer);
 
-void clearLines(int count);
+// очистить сверху N строк
+void clearLines_up(int count);
+// очистить снизу N строк
+void clearlines_down(int n);
+// очистить текущюю строку
+void clear_current_line();
+
+void clear_n_lines(int n);
+
+void clear_n_lines_from_row(int start_y, int n);
+
+
                                                 
 /*  удаление подстроки из строки  */
 std::string remove_substring(const std::string&, const std::string& );

@@ -81,7 +81,7 @@ std::string id_print(const std::string& id_str) {
 
 bool TInventory::print_id( void ) { // функция (метод класса) выводящая данные на экран
 
-  clearLines(2);   // очищаем 2 строки выше
+  clearLines_up(2);   // очищаем 2 строки выше
 
 /* 
    if (isatty(STDOUT_FILENO)) {

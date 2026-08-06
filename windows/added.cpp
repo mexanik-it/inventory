@@ -1,17 +1,18 @@
 #include <iostream>
 #include <vector>
-//#include <termios.h>
-#include <unistd.h>
-#include <iostream>
 #include <string>
-#include <algorithm> // Для std::transform
-#include <limits>    // Для std::numeric_limits
-#include <cctype>    // Для ::tolower
-#include <unistd.h>       // для STDIN_FILENO
-#include <fcntl.h>        // если понадобится, например, для fcntl
+#include <algorithm>
+#include <limits>
+#include <cctype>
+#include <fcntl.h>
 
-#include <windows.h> // Обязательно подключите этот заголовок
-#include <ios>       // Для std::ios::sync_with_stdio
+#include <windows.h>
+#include <ios>
+
+#include "main.h"
+
+// --- ПРОТОТИПЫ ФУНКЦИЙ (если не вынесены в main.h) ---
+void clear_n_lines_from_row(int start_y, int n);
 
 // Цвета для Windows консоли
 enum class Color {
@@ -47,8 +48,8 @@ void resetColor() {
     }
 }
 
-
-bool askYesNo(const std::string& prompt, const std::string& exit_command = "quit") {
+// Исправленная функция askYesNo (без дубликатов и без значения по умолчанию в .cpp)
+bool askYesNo(const std::string& prompt, const std::string& exit_command) {
     std::string input;
 
     while (true) {
@@ -58,14 +59,11 @@ bool askYesNo(const std::string& prompt, const std::string& exit_command = "quit
         }
         std::cout << "): ";
 
-        // Проверяем состояние потока ПЕРЕД чтением
         if (!(std::cin >> input)) {
-            // Обработка Ctrl+Z / Ctrl+D или системной ошибки ввода
             std::cout << "\nОшибка ввода. Завершение.\n";
             return false; 
         }
 
-        // Преобразуем к нижнему регистру для сравнения
         std::transform(input.begin(), input.end(), input.begin(),
                        [](unsigned char c){ return std::tolower(c); });
 
@@ -80,13 +78,11 @@ bool askYesNo(const std::string& prompt, const std::string& exit_command = "quit
             throw std::runtime_error("User cancelled operation");
         }
 
-        // Вход неверный: очищаем строку от лишних символов до конца строки
-        // Это предотвращает захват "мусора" следующей операцией ввода
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        
         std::cout << "Некорректный ввод. Попробуйте еще раз.\n";
     }
 }
+
 // Безопасная замена символа в std::string (возвращает новую строку)
 std::string replaceChar(const std::string &src, char oldChar, char newChar) {
     std::string result = src;
@@ -103,15 +99,31 @@ void removeAllSubstrings(std::string &str, const std::string &sub) {
     }
 }
 
-// Очистить N строк выше курсора (только Windows API, без ANSI)
-void clearLines(int count) {
+// Очистить текущую строку (только Windows API)
+void clear_current_line() {
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    if (!GetConsoleScreenBufferInfo(hOut, &csbi)) return;
+
+    DWORD written = 0;
+    COORD pos = csbi.dwCursorPosition;
+
+    FillConsoleOutputCharacter(hOut, ' ',
+        (csbi.dwSize.X - pos.X),
+        pos, &written);
+
+    pos.X = 0;
+    SetConsoleCursorPosition(hOut, pos);
+}
+
+// Очистить N строк выше курсора
+void clearLines_up(int count) {
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
     if (!GetConsoleScreenBufferInfo(hOut, &csbi)) return;
 
     COORD cursorPos = csbi.dwCursorPosition;
-
     if (cursorPos.Y < count) count = cursorPos.Y;
 
     DWORD written;
@@ -126,29 +138,25 @@ void clearLines(int count) {
     SetConsoleCursorPosition(hOut, cursorPos);
 }
 
+// Очистить N строк ниже курсора
+void clearlines_down(int n) {
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    if (!GetConsoleScreenBufferInfo(hOut, &csbi)) return;
+
+    COORD pos = csbi.dwCursorPosition;
+    DWORD written = 0;
+
+    for (int i = 0; i < n; ++i) {
+        COORD linePos = {0, static_cast<SHORT>(pos.Y + i)};
+        FillConsoleOutputCharacter(hOut, ' ', csbi.dwSize.X, linePos, &written);
+    }
+
+    SetConsoleCursorPosition(hOut, pos);
+}
+
 /**************************************************************************************************/
 /* меню вертикальное                                                                              */
-/* использование:                                                                                 */
-/* --------------                                                                                 */
-/* int main() {                                                                                   */
-/*    std::vector<std::string> menu = {                                                           */
-/*        "Start Game",                                                                           */
-/*        "Settings",                                                                             */
-/*        "Credits",                                                                              */
-/*        "Exit"                                                                                  */
-/*    };                                                                                          */
-/*                                                                                                */
-/*    int choice = show_menu(menu, 5, 3);                                                         */
-/*                                                                                                */
-/*    switch (choice) {                                                                           */
-/*        case 0: std::cout << "\n Старшая сестра\n"; break;                                      */
-/*        case 1: std::cout << "\n Заведующая\n"; break;                                          */
-/*        case 2: std::cout << "\n Ординаторская\n"; break;                                       */
-/*        case 3: std::cout << "\n Другое...\n"; return 0;                                        */
-/*    }                                                                                           */
-/*                                                                                                */
-/*     return 0;                                                                                  */
-/* }                                                                                              */
 /**************************************************************************************************/
 void gotoxy_v(int x, int y) {
     COORD pos = {static_cast<SHORT>(x), static_cast<SHORT>(y)};
@@ -157,6 +165,37 @@ void gotoxy_v(int x, int y) {
 
 void clear_screen() {
     system("cls");
+}
+
+void clear_n_lines(int n) {
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    if (!GetConsoleScreenBufferInfo(hOut, &csbi)) return;
+
+    COORD pos = csbi.dwCursorPosition;
+    DWORD written = 0;
+
+    for (int i = 0; i < n; ++i) {
+        COORD linePos = {0, static_cast<SHORT>(pos.Y + i)};
+        FillConsoleOutputCharacter(hOut, ' ', csbi.dwSize.X, linePos, &written);
+    }
+
+    SetConsoleCursorPosition(hOut, pos);
+}
+
+// Реализация функции, которую раньше не хватало
+void clear_n_lines_from_row(int start_y, int n) {
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    if (!GetConsoleScreenBufferInfo(hOut, &csbi)) return;
+
+    DWORD written = 0;
+    for (int i = 0; i < n; ++i) {
+        COORD linePos = {0, static_cast<SHORT>(start_y + i)};
+        FillConsoleOutputCharacter(hOut, ' ', csbi.dwSize.X, linePos, &written);
+        // Опционально: можно раскомментировать, если остаются «призраки» цвета:
+        // FillConsoleOutputAttribute(hOut, csbi.wAttributes, csbi.dwSize.X, linePos, &written);
+    }
 }
 
 int show_menu_v(const std::vector<std::string>& items, int start_x, int start_y) {
@@ -169,7 +208,9 @@ int show_menu_v(const std::vector<std::string>& items, int start_x, int start_y)
     SetConsoleMode(hIn, mode & ~(ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT));
 
     while (true) {
-        clear_screen();
+        // Очищаем ровно count строк, начиная с start_y
+        //clear_n_lines_from_row(start_y, count); 
+
         for (int i = 0; i < count; ++i) {
             gotoxy_v(start_x, start_y + i);
             if (i == selected) {
@@ -192,15 +233,14 @@ int show_menu_v(const std::vector<std::string>& items, int start_x, int start_y)
                     selected = (selected + 1) % count;
                     break;
                 case VK_RETURN:
-                    SetConsoleMode(hIn, mode);
-                    return selected;
+                    SetConsoleMode(hIn, mode); // Восстанавливаем режим консоли
+                    return selected;         // Возвращаем выбор
             }
         }
     }
 }
 
 // Включение/выключение raw-режима терминала
-// Глобальная переменная для хранения исходного режима консоли
 static DWORD original_mode = 0;
 static bool mode_changed = false;
 
@@ -212,57 +252,34 @@ void set_raw(bool enable) {
     if (!GetConsoleMode(hInput, &mode)) return;
 
     if (enable) {
-        // Сохраняем оригинальный режим
         original_mode = mode;
-        
-        // Отключаем буферизацию ввода, эхо и обработку Ctrl+C
         mode &= ~(ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT | ENABLE_PROCESSED_INPUT);
-        
         SetConsoleMode(hInput, mode);
         mode_changed = true;
     } else {
         if (mode_changed) {
-            // Восстанавливаем оригинальный режим
             SetConsoleMode(hInput, original_mode);
             mode_changed = false;
         }
     }
 }
-// ANSI-код: переместить курсор в (x,y) (y=строка, x=колонка)
+
+/*************************************************************************************************/
+/* горизонтальное меню (ANSI)                                                                     */
+/*************************************************************************************************/
 void gotoxy_h(int x, int y) {
     std::cout << "\033[" << y << ";" << x << "H" << std::flush;
 }
 
-// ANSI-код: очистить до конца строки
 void clear_eol() {
     std::cout << "\033[K" << std::flush;
 }
 
-/*************************************************************************************************/
-/* горизонтальное меню                                                                           */
-/* пример использования:                                                                         */
-/* --------------------                                                                          */
-/* int main() {                                                                                  */
-/*     const std::vector<std::string> items = {"Start", "Settings", "Help", "Exit"};             */
-/*     const int row = 5;                                                                        */
-/*                                                                                               */
-/*     int selected_index = show_menu(items, row);                                               */
-/*                                                                                               */
-/*     std::cout << "\nВыбран пункт: " << items[selected_index] << "\n";                         */
-/*     return 0;                                                                                 */
-/* }                                                                                             */
-/*************************************************************************************************/
-/**
- * Показывает горизонтальное меню и возвращает индекс выбранного пункта.
- * @param items Список пунктов меню.
- * @param row Строка терминала, где рисовать меню.
- * @return Индекс выбранного пункта (0..items.size()-1).
- */
 int show_menu_h(const std::vector<std::string>& items, int row) {
     int selected = 0;
 
-    set_raw(true); // включить raw-режим
-    atexit([](){ set_raw(false); }); // вернуть настройки при выходе
+    set_raw(true);
+    atexit([](){ set_raw(false); });
 
     int max_len = 0;
     for (const auto& s : items) {
@@ -280,7 +297,6 @@ int show_menu_h(const std::vector<std::string>& items, int row) {
             } else {
                 std::cout << " " << items[i] << " ";
             }
-            // Добавляем пробелы, чтобы выровнять ширину элементов
             int padding = item_width - static_cast<int>(items[i].size()) - 2;
             if (padding > 0) {
                 std::cout << std::string(padding, ' ');
@@ -289,14 +305,14 @@ int show_menu_h(const std::vector<std::string>& items, int row) {
         std::cout << std::flush;
 
         int ch = getchar();
-        if (ch == 27 && getchar() == '[') { // ESC [ — начало спецкода стрелок
+        if (ch == 27 && getchar() == '[') {
             char dir = getchar();
-            if (dir == 'D') { // Left
+            if (dir == 'D') {
                 selected = (selected == 0) ? static_cast<int>(items.size()) - 1 : selected - 1;
-            } else if (dir == 'C') { // Right
+            } else if (dir == 'C') {
                 selected = (selected + 1 >= static_cast<int>(items.size())) ? 0 : selected + 1;
             }
-        } else if (ch == '\n' || ch == '\r') { // Enter
+        } else if (ch == '\n' || ch == '\r') {
             break;
         }
     }

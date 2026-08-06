@@ -54,9 +54,9 @@ int main ( ) {
   system ( "cls" );
   enable_vt_mode();
 
-  /* SetConsoleOutputCP(1251); */
-  setlocale ( LC_ALL, "Russian" );
-  SetConsoleSize(100, 30);
+  SetConsoleOutputCP(1251);
+  /* setlocale ( LC_ALL, "Russian" ); */
+    SetConsoleSize(100, 30);
 //  if ( geteuid() ) {
 //     cout << "Launch is only possible with administrator (root) rights !" << endl
 //          << "Запуск только от имени администратора ... " << endl;
