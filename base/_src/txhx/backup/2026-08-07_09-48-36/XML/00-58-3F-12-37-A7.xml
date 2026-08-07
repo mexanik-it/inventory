@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+  <inventory>
+	<id_date>05.06.2026</id_date>
+	<id_mb>Aquarius AQB365MC</id_mb>
+	<id_cpu>Intel(R) i5-9400 2.90GHz </id_cpu>
+	<id_mem>9Gb</id_mem>
+	<id_hdd>FOXLINE_FLSSD256X5</id_hdd>
+	<id_hdd_size>SSD 256</id_hdd_size>
+	<id_sys>ALT Workstation 9.0</id_sys>
+	<id_host>1051a2.localdomain</id_host>
+	<id_ip>192.168.36.34</id_ip>
+	<id_mac>00:58:3F:12:37:A7</id_mac>
+	<id_office>4</id_office>
+	<id_structure>stomatology</id_structure>
+  </inventory>

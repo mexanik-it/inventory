@@ -1,0 +1,565 @@
+// file: include/backup_stats.hpp
+#pragma once
+#include <cstdint>
+
+struct BackupStats {
+    uint64_t total_files = 0;
+    uint64_t copied_files = 0;
+    uint64_t skipped_files = 0;
+    uint64_t total_bytes = 0;
+    uint64_t copied_bytes = 0;
+};
+п»ї// file: source/main.cpp
+#include "txhx_core.hpp"
+#include "backup_stats.hpp"  // <-- Р­РўРђ РЎРўР РћРљРђ Р‘Р«Р›Рђ РџР РћРџРЈР©Р•РќРђ
+#include <iostream>
+#include <string>
+
+int main(int argc, char* argv[]) {
+    std::string remote_path;
+    std::string local_dir;
+
+    // Р–С‘СЃС‚РєРёРµ РїСѓС‚Рё РґР»СЏ С‚РµСЃС‚Р°
+    remote_path = "//10.67.1.36/oit_techbase/list-points";
+    local_dir   = "C:/inventory/base/_src/txhx/backup";
+
+    std::cout << "[INFO] Using paths:\n";
+    std::cout << "  Remote: " << remote_path << "\n";
+    std::cout << "  Local:  " << local_dir << "\n\n";
+
+    TXHX txhx;
+    if (!txhx.init(remote_path, local_dir)) {
+        std::cerr << "[CRITICAL] Init failed.\n";
+        return 1;
+    }
+
+    BackupStats stats = txhx.backup();  // РўРµРїРµСЂСЊ СЌС‚Р° СЃС‚СЂРѕРєР° СЃСЂР°Р±РѕС‚Р°РµС‚
+
+    // Р”Р°Р»СЊС€Рµ РѕСЃС‚Р°Р»СЊРЅРѕР№ РєРѕРґ...
+    
+    return 0;
+}
+п»ї// file: source/txhx_backup.cpp
+#include "txhx_backup.hpp"
+#include "txhx_paths.hpp"
+#include "txhx_report.hpp"
+#include "txhx_ui.hpp"
+
+#include <thread>
+#include <atomic>
+#include <algorithm>
+#include <iostream>      // <-- Р­РўРћР“Рћ РќР• РҐР’РђРўРђР›Рћ РґР»СЏ std::cerr
+#include <chrono>
+
+namespace fs = std::filesystem;
+
+static std::atomic<bool> g_cancel_requested(false);
+
+// Р¤СѓРЅРєС†РёСЏ estimate_eta (РѕСЃС‚Р°РІР»СЏРµРј РєР°Рє Р±С‹Р»Р°)
+static double estimate_eta(size_t done_files, size_t total_files, double elapsed_seconds) {
+    if (done_files == 0 || total_files == 0) return 0.0;
+    double avg_time = elapsed_seconds / static_cast<double>(done_files);
+    size_t remaining = total_files - done_files;
+    return avg_time * static_cast<double>(remaining);
+}
+
+bool perform_backup(TXHX& txhx, BackupStats& stats) {
+    g_cancel_requested.store(false);
+
+    // --- РРЎРџР РђР’Р›Р•РќРР•: РСЃРїРѕР»СЊР·СѓРµРј РїСѓР±Р»РёС‡РЅС‹Рµ РіРµС‚С‚РµСЂС‹ РІРјРµСЃС‚Рѕ РїСЂРёРІР°С‚РЅС‹С… РїРѕР»РµР№ ---
+    const auto& remote = txhx.get_remote_path();
+    const auto& local = txhx.get_local_dir();
+    // ----------------------------------------------------------------------
+
+    fs::path backup_dir = make_backup_dir_path();
+    
+    // РЎРѕР·РґР°РµРј РґРёСЂРµРєС‚РѕСЂРёСЋ Р±СЌРєР°РїР°, РµСЃР»Рё РЅРµС‚
+    try {
+        if (!fs::exists(backup_dir)) {
+            fs::create_directories(backup_dir);
+        }
+    } catch (const fs::filesystem_error& e) {
+        std::cerr << "[CRITICAL] Cannot create backup directory: " << e.what() << "\n";
+        return false;
+    }
+
+    std::vector<fs::path> local_files;
+    try {
+        for (const auto& entry : fs::directory_iterator(local)) {
+            if (entry.is_regular_file()) {
+                local_files.push_back(entry.path());
+            }
+        }
+    } catch (const fs::filesystem_error& e) {
+        std::cerr << "[CRITICAL] Error reading local directory: " << e.what() << "\n";
+        return false;
+    }
+
+    stats.total_files = local_files.size();
+    stats.copied_files = 0;
+    stats.skipped_files = 0;
+    stats.total_bytes = 0; // РјРѕР¶РЅРѕ РїРѕСЃС‡РёС‚Р°С‚СЊ Р·Р°СЂР°РЅРµРµ, РЅРѕ РїРѕРєР° С‚Р°Рє
+
+    auto start_time = std::chrono::steady_clock::now();
+
+    ui_start_progress(L"Backup");
+
+    size_t total_count = stats.total_files;
+    if (total_count == 0) total_count = 1; // Р—Р°С‰РёС‚Р° РѕС‚ РґРµР»РµРЅРёСЏ РЅР° РЅРѕР»СЊ
+
+    for (size_t i = 0; i < local_files.size(); ++i) {
+        if (g_cancel_requested.load()) {
+            // --- РРЎРџР РђР’Р›Р•РќРћ: С‚РµРїРµСЂСЊ std::cerr СЂР°Р±РѕС‚Р°РµС‚ ---
+            std::cerr << "\n[WARN] Backup cancelled by user.\n";
+            break;
+        }
+
+        const auto& src = local_files[i];
+        fs::path dst_local = backup_dir / src.filename();
+        
+        // Р¤РѕСЂРјРёСЂСѓРµРј РїСѓС‚СЊ РЅР° СѓРґР°Р»РµРЅРЅРѕРј СЂРµСЃСѓСЂСЃРµ
+        // Р’РЅРёРјР°РЅРёРµ: Р»РѕРіРёРєР° РѕР±СЉРµРґРёРЅРµРЅРёСЏ РїСѓС‚РµР№ РјРѕР¶РµС‚ Р·Р°РІРёСЃРµС‚СЊ РѕС‚ С„РѕСЂРјР°С‚Р° remote (UNC РёР»Рё РїР°РїРєР°)
+        fs::path dst_remote = fs::path(remote) / src.filename();
+
+        bool ok = true;
+
+        // 1. РљРѕРїРёСЂСѓРµРј РІ Р»РѕРєР°Р»СЊРЅСѓСЋ Р±СЌРєР°Рї-РїР°РїРєСѓ
+        try {
+            fs::copy_file(src, dst_local, fs::copy_options::overwrite_existing);
+            stats.copied_bytes += fs::file_size(src);
+            stats.copied_files++;
+        } catch (...) {
+            stats.skipped_files++;
+            ok = false;
+        }
+
+        // 2. РљРѕРїРёСЂСѓРµРј РЅР° СѓРґР°Р»РµРЅРЅС‹Р№ СЂРµСЃСѓСЂСЃ (РµСЃР»Рё РїСѓС‚СЊ РІР°Р»РёРґРµРЅ Рё РµСЃС‚СЊ РїСЂР°РІР°)
+        try {
+            if (fs::exists(dst_remote)) {
+                fs::remove(dst_remote);
+            }
+            fs::copy_file(src, dst_remote, fs::copy_options::overwrite_existing);
+        } catch (...) {
+            stats.skipped_files++;
+            ok = false;
+        }
+
+        auto now = std::chrono::steady_clock::now();
+        double elapsed = std::chrono::duration<double>(now - start_time).count();
+
+        int percent = static_cast<int>((i + 1) * 100 / total_count);
+        double eta = estimate_eta(i + 1, stats.total_files, elapsed);
+
+        std::string status = ok ? "OK" : "WARN";
+        ui_update_progress(percent, status + ": " + src.filename().string(), eta);
+    }
+
+    ui_finish_progress();
+
+    return stats.copied_files > 0 || stats.skipped_files == 0; 
+}
+// file: include/txhx_backup.hpp
+#pragma once
+
+#include "txhx_core.hpp"
+#include "backup_stats.hpp"  // <-- Подключаем структуру, но НЕ определяем её здесь
+
+// Здесь НЕТ struct BackupStats { ... } — только использование
+
+bool perform_backup(TXHX& txhx, BackupStats& stats);
+// file: source/txhx_core.cpp
+#include "txhx_core.hpp"
+#include "txhx_backup.hpp"
+#include "txhx_restore.hpp"
+#include <iostream>
+#include <filesystem>
+
+namespace fs = std::filesystem;
+
+// -----------------------------------------------------------------------------
+// Инициализация: проверка и создание путей
+// -----------------------------------------------------------------------------
+bool TXHX::init(const std::string& remote_path, const std::string& local_dir) {
+    m_remote_path = remote_path;
+    m_local_dir = local_dir;
+
+    std::cout << "[INFO] Checking local directory: " << m_local_dir << "\n";
+
+    try {
+        if (!fs::exists(m_local_dir)) {
+            std::cout << "[INFO] Directory not found, creating: " << m_local_dir << "\n";
+            if (fs::create_directories(m_local_dir)) {
+                std::cout << "[OK] All parent directories created.\n";
+            }
+        } else if (!fs::is_directory(m_local_dir)) {
+            std::cerr << "[CRITICAL] Path exists but is not a directory: " << m_local_dir << "\n";
+            return false;
+        }
+    } catch (const fs::filesystem_error& e) {
+        std::cerr << "[CRITICAL] Filesystem error: " << e.what() << "\n";
+        return false;
+    }
+
+    // TODO: Здесь должна быть твоя логика проверки remote_path
+    // Например: if (!fs::exists(remote_path)) { ... }
+
+    std::cout << "[OK] Init completed successfully.\n";
+    return true;
+}
+
+// -----------------------------------------------------------------------------
+// Бэкап
+// -----------------------------------------------------------------------------
+// Стало:
+BackupStats TXHX::backup() {
+    BackupStats stats;
+    bool ok = perform_backup(*this, stats);
+
+    if (!ok) {
+        std::cerr << "[ERROR] Backup failed.\n";
+    } else {
+        std::cout << "[INFO] Backup complete.\n";
+        std::cout << "  Total files:      " << stats.total_files << "\n";
+        std::cout << "  Copied:           " << stats.copied_files << "\n";
+        std::cout << "  Skipped:          " << stats.skipped_files << "\n";
+        std::cout << "  Total bytes:      " << stats.total_bytes << " B\n";
+    }
+// -----------------------------------------------------------------------------
+// Восстановление
+// -----------------------------------------------------------------------------
+bool TXHX::restore() {
+    RestoreStats stats;
+    bool ok = perform_restore(*this, stats);
+
+    if (!ok) {
+        std::cerr << "[ERROR] Restore failed.\n";
+        return false;
+    }
+
+    std::cout << "[INFO] Restore complete.\n";
+    std::cout << "  Total files:      " << stats.total_files << "\n";
+    std::cout << "  Restored:         " << stats.restored_files << "\n";
+    std::cout << "  Failed:           " << stats.failed_files << "\n";
+
+    return true;
+}
+
+// -----------------------------------------------------------------------------
+// Сжатие (заглушка, если пока не реализовано)
+// -----------------------------------------------------------------------------
+bool TXHX::compress() {
+    std::cerr << "[WARNING] Compress functionality not implemented yet.\n";
+    // TODO: Реализовать логику сжатия
+    return false; 
+}
+// file: include/txhx_core.hpp
+#pragma once
+
+#include <string>
+#include <filesystem>
+#include "backup_stats.hpp"  // <-- ЭТА СТРОКА КРИТИЧЕСКИ ВАЖНА
+
+namespace fs = std::filesystem;
+
+class TXHX {
+public:
+    TXHX() = default;
+
+    bool init(const std::string& remote_path, const std::string& local_dir);
+    
+    BackupStats backup();  // <-- Теперь компилятор знает, что это за тип
+    
+    bool restore();
+    bool compress();
+
+    void show_progress(const wchar_t* title);
+    void close_progress();
+    void set_progress(int percent, const std::string& message, double eta_seconds);
+    void add_report(const std::string& msg);
+
+    const std::string& get_remote_path() const { return m_remote_path; }
+    const std::string& get_local_dir() const   { return m_local_dir; }
+
+private:
+    fs::path m_backup_root = "backup";
+    std::string m_remote_path;
+    std::string m_local_dir;
+};
+// file: include/txhx_paths.cpp
+
+#include "txhx_paths.hpp"
+#include <iostream>
+#include <chrono>
+#include <iomanip>
+#include <sstream>
+
+namespace fs = std::filesystem;
+
+bool validate_local_path(const std::string& path) {
+    try {
+        fs::path p(path);
+        if (!fs::exists(p)) {
+            std::cerr << "[ERROR] Local path does not exist: " << path << "\n";
+            return false;
+        }
+        if (!fs::is_directory(p)) {
+            std::cerr << "[ERROR] Local path is not a directory: " << path << "\n";
+            return false;
+        }
+        return true;
+    } catch (const fs::filesystem_error& e) {
+        std::cerr << "[ERROR] Filesystem error checking local path: " << e.what() << "\n";
+        return false;
+    }
+}
+
+bool validate_remote_path(const std::string& path, bool create_if_missing) {
+    try {
+        fs::path p(path);
+        if (fs::exists(p) && fs::is_directory(p)) {
+            return true;
+        }
+        if (create_if_missing) {
+            if (fs::create_directories(p)) {
+                std::cout << "[INFO] Created remote directory: " << path << "\n";
+                return true;
+            }
+        }
+        std::cerr << "[ERROR] Remote path does not exist and cannot be created: " << path << "\n";
+        return false;
+    } catch (const fs::filesystem_error& e) {
+        std::cerr << "[ERROR] Filesystem error checking remote path: " << e.what() << "\n";
+        return false;
+    }
+}
+
+std::string make_backup_dirname() {
+    auto now = std::chrono::system_clock::now();
+    std::time_t t = std::chrono::system_clock::to_time_t(now);
+    std::tm tm = *std::localtime(&t);
+
+    std::ostringstream oss;
+    oss << std::setfill('0')
+        << tm.tm_year + 1900 << "-"
+        << std::setw(2) << tm.tm_mon + 1 << "-"
+        << std::setw(2) << tm.tm_mday << "_"
+        << std::setw(2) << tm.tm_hour << "-"
+        << std::setw(2) << tm.tm_min << "-"
+        << std::setw(2) << tm.tm_sec;
+    return oss.str();
+}
+
+fs::path make_backup_dir_path() {
+    return fs::current_path() / "backup" / make_backup_dirname();
+}
+// file: include/txhx_paths.hpp
+
+#pragma once
+
+#include <string>
+#include <filesystem>
+
+namespace fs = std::filesystem;
+
+bool validate_remote_path(const std::string& path, bool create_if_missing = false);
+bool validate_local_path(const std::string& path);
+std::string make_backup_dirname();
+fs::path make_backup_dir_path();
+// file: include/txhx_report.cpp
+
+#include "txhx_report.hpp"
+#include <fstream>
+#include <sstream>
+
+void init_report_file(const std::string& report_path) {
+    std::ifstream f(report_path);
+    if (f.good()) return; // уже есть
+    f.close();
+
+    std::ofstream ofs(report_path);
+    ofs << "<html><head><meta charset=\"UTF-8\"><title>TXHX Report</title></head><body>\n";
+    ofs << "<h1>TXHX Backup/Restore Report</h1>\n";
+}
+
+void append_report_line(const std::string& report_path, const std::string& line) {
+    std::ofstream ofs(report_path, std::ios::app);
+    if (!ofs) return;
+    ofs << line << "\n";
+}
+// file: include/txhx_report.hpp
+
+#pragma once
+
+#include <string>
+
+void init_report_file(const std::string& report_path);
+void append_report_line(const std::string& report_path, const std::string& line);
+// file: source/txhx_restore.cpp
+#include "txhx_restore.hpp"
+#include "txhx_paths.hpp"
+#include "txhx_ui.hpp"
+
+#include <iostream>
+#include <filesystem>
+#include <vector>
+#include <algorithm>
+#include <chrono>
+
+namespace fs = std::filesystem;
+
+// -----------------------------------------------------------------------------
+// Вспомогательная функция: оценка времени (ETA)
+// Должна быть объявлена ДО использования в цикле
+// -----------------------------------------------------------------------------
+static double estimate_eta(size_t done, size_t total, double elapsed_sec) {
+    if (done == 0 || total == 0) {
+        return 0.0;
+    }
+    double avg_time_per_file = elapsed_sec / static_cast<double>(done);
+    size_t remaining = total - done;
+    return avg_time_per_file * static_cast<double>(remaining);
+}
+
+bool perform_restore(TXHX& txhx, RestoreStats& stats) {
+    // Получаем локальную директорию через геттер
+    const auto& local_dir = txhx.get_local_dir();
+    // remote_path не нужен для restore, поэтому не берём его — убираем предупреждение
+
+    fs::path backup_dir = make_backup_dir_path();
+
+    if (!fs::exists(backup_dir)) {
+        std::cerr << "[CRITICAL] Backup directory not found: " << backup_dir << "\n";
+        return false;
+    }
+
+    std::vector<fs::path> backup_files;
+    try {
+        for (const auto& entry : fs::directory_iterator(backup_dir)) {
+            if (entry.is_regular_file()) {
+                backup_files.push_back(entry.path());
+            }
+        }
+    } catch (const fs::filesystem_error& e) {
+        std::cerr << "[CRITICAL] Error scanning backup directory: " << e.what() << "\n";
+        return false;
+    }
+
+    stats.total_files = backup_files.size();
+    stats.restored_files = 0;
+    stats.failed_files = 0;
+
+    auto start_time = std::chrono::steady_clock::now();
+    ui_start_progress(L"Restore");
+
+    size_t denom = (stats.total_files == 0) ? 1 : stats.total_files;
+
+    for (size_t i = 0; i < backup_files.size(); ++i) {
+        const auto& src = backup_files[i];
+        fs::path dst = fs::path(local_dir) / src.filename();
+
+        bool ok = true;
+        try {
+            fs::copy_file(src, dst, fs::copy_options::overwrite_existing);
+            stats.restored_files++;
+        } catch (...) {
+            stats.failed_files++;
+            ok = false;
+        }
+
+        auto now = std::chrono::steady_clock::now();
+        double elapsed = std::chrono::duration<double>(now - start_time).count();
+
+        int percent = static_cast<int>((i + 1) * 100 / denom);
+        double eta = estimate_eta(i + 1, stats.total_files, elapsed);
+
+        std::string status = ok ? "OK" : "FAIL";
+        ui_update_progress(percent, status + ": " + src.filename().string(), eta);
+    }
+
+    ui_finish_progress();
+
+    return (stats.restored_files > 0) || (stats.total_files == 0);
+}
+// file: include/txhx_restore.hpp
+#pragma once
+
+#include <cstdint>
+#include <string>
+#include "txhx_core.hpp"
+
+// -----------------------------------------------------------------------------
+// Структура статистики для операции восстановления
+// -----------------------------------------------------------------------------
+struct RestoreStats {
+    size_t total_files      = 0;   // Всего файлов в бэкапе
+    size_t restored_files   = 0;   // Успешно восстановлено
+    size_t failed_files     = 0;   // Не удалось восстановить
+};
+
+// -----------------------------------------------------------------------------
+// Функция выполнения восстановления
+// -----------------------------------------------------------------------------
+bool perform_restore(TXHX& txhx, RestoreStats& stats);
+// file: include/txhx_ui.cpp
+
+#include "txhx_ui.hpp"
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <chrono>
+#include <thread>
+
+static bool g_ui_active = false;
+static std::chrono::steady_clock::time_point g_start_time;
+
+void ui_start_progress(const std::wstring& title) {
+    g_ui_active = true;
+    g_start_time = std::chrono::steady_clock::now();
+
+    // Заголовок: переводим wstring в string (простая ASCII-версия для консоли)
+    std::string t;
+    for (wchar_t c : title) {
+        if (c < 128) t.push_back(static_cast<char>(c));
+        else t.push_back('?');
+    }
+    std::cout << "\n=== " << t << " ===\n";
+}
+
+void ui_update_progress(int percent, const std::string& status, double eta_seconds) {
+    if (!g_ui_active) return;
+
+    // Простой прогресс-бар в одной строке (перезапись той же строки)
+    const int bar_width = 40;
+    int filled = percent * bar_width / 100;
+
+    std::cout << "\r[";
+    for (int i = 0; i < filled; ++i) std::cout << "#";
+    for (int i = filled; i < bar_width; ++i) std::cout << ".";
+    std::cout << "] "
+              << std::setw(3) << percent << "% "
+              << status;
+
+    if (eta_seconds > 0) {
+        int eta_min = static_cast<int>(eta_seconds) / 60;
+        int eta_sec = static_cast<int>(eta_seconds) % 60;
+        std::cout << " | ETA: " << eta_min << "m " << eta_sec << "s";
+    }
+
+    std::cout.flush();
+}
+
+void ui_finish_progress() {
+    if (!g_ui_active) return;
+    std::cout << "\nDone.\n";
+    g_ui_active = false;
+}
+// file: include/txhx_ui.hpp
+
+#pragma once
+
+#include <string>
+
+// UI абстракция: в будущем можно заменить на GUI или оставить консольный
+void ui_start_progress(const std::wstring& title);
+void ui_update_progress(int percent, const std::string& status, double eta_seconds);
+void ui_finish_progress();
