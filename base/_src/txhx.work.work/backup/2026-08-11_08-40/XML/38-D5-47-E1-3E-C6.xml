@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+  <inventory>
+	<id_date>08.06.2026</id_date>
+	<id_mb>ASUSTeK Z170-K</id_mb>
+	<id_cpu>Intel(R) i7-6700K 4.00GHz</id_cpu>
+	<id_mem>32Gb</id_mem>
+	<id_hdd>TOSHIBA DT01ACA100</id_hdd>
+	<id_hdd_size>931Gb</id_hdd_size>
+	<id_sys>Windows 10 IoT Enterprise</id_sys>
+	<id_host>KOMPUTER</id_host>
+	<id_ip>192.168.0.129</id_ip>
+	<id_mac>38-D5-47-E1-3E-C6</id_mac>
+	<id_office>my</id_office>
+	<id_structure>home</id_structure>
+  </inventory>

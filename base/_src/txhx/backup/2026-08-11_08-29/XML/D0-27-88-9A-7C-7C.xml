@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+  <inventory>
+	<id_date>29.07.2026</id_date>
+	<id_mb>Foxconn H61S</id_mb>
+	<id_cpu>Intel Celeron CPU G530 2.40GHz</id_cpu>
+	<id_mem>12Gb</id_mem>
+	<id_hdd>WD Green</id_hdd>
+	<id_hdd_size>SSD 500Gb</id_hdd_size>
+	<id_sys>Windows 10 Pro</id_sys>
+	<id_prn>Samsung SCX-483x 5x3x Series</id_prn>
+	<id_host>WS-014-088</id_host>
+	<id_ip>10.67.14.88</id_ip>
+	<id_mac>D0-27-88-9A-7C-7C</id_mac>
+	<id_office>923</id_office>
+	<id_structure>pol1 khl</id_structure>
+  </inventory>

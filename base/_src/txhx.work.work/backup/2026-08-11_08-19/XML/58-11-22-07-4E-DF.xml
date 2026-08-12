@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+  <inventory>
+	<id_date>05.06.2026</id_date>
+	<id_mb>ASUSTeK PRIME H510M-K</id_mb>
+	<id_cpu>Intel(R) i5-10400 2.90GHz</id_cpu>
+	<id_mem>8Gb</id_mem>
+	<id_hdd>ST500NM0011</id_hdd>
+	<id_hdd_size>SSD 465 Gb</id_hdd_size>
+	<id_sys>Windows 10 Pro</id_sys>
+	<id_host>WS-002-008</id_host>
+	<id_ip>10.67.2.8</id_ip>
+	<id_mac>58-11-22-07-4E-DF</id_mac>
+	<id_office>312 Igor</id_office>
+	<id_structure>uprav</id_structure>
+  </inventory>

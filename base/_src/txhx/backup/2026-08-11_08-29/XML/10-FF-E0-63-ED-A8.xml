@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+  <inventory>
+	<id_date>19.06.2026</id_date>
+	<id_mb>Gigabyte H410M K</id_mb>
+	<id_cpu>Intel(R) i3-10100 3.60GHz</id_cpu>
+	<id_mem>16Gb</id_mem>
+	<id_hdd>WD Blue SN5000 500GB</id_hdd>
+	<id_hdd_size>HDD 465Gb</id_hdd_size>
+	<id_sys>Windows 10 Pro</id_sys>
+	<id_host>WS-038-058</id_host>
+	<id_ip>10.67.38.58</id_ip>
+	<id_mac>10-FF-E0-63-ED-A8</id_mac>
+	<id_office>409</id_office>
+	<id_structure>pol1</id_structure>
+  </inventory>

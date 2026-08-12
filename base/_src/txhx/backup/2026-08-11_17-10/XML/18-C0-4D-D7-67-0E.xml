@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+  <inventory>
+	<id_date>04.06.2026</id_date>
+	<id_mb>Gigabyte H510M H</id_mb>
+	<id_cpu>Intel(R) i3-10100 3.60GHz</id_cpu>
+	<id_mem>8Gb</id_mem>
+	<id_hdd>KINGSTON SA400S37480G</id_hdd>
+	<id_hdd_size>SSD 447 Gb</id_hdd_size>
+	<id_sys>Windows 10 IoT Enterprise LTSC </id_sys>
+	<id_host>KOMPUTER</id_host>
+	<id_ip>10.67.2.33</id_ip>
+	<id_mac>18-C0-4D-D7-67-0E</id_mac>
+	<id_office>312</id_office>
+	<id_structure>uprav</id_structure>
+  </inventory>

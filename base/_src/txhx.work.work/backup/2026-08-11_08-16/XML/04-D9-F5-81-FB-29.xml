@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+  <inventory>
+	<id_date>28.07.2026</id_date>
+	<id_mb>ASUSTeK PRIME A320M-A</id_mb>
+	<id_cpu>AMD Ryzen 5 3400G with Radeon Vega Graphics    </id_cpu>
+	<id_mem>6 GiB</id_mem>
+	<id_hdd>WDC WD5003ABYX-01WERA1</id_hdd>
+	<id_hdd_size>unknown</id_hdd_size>
+	<id_sys>Windows 10 Pro</id_sys>
+	<id_prn>HP LaserJet Pro M404dn</id_prn>
+	<id_host>WS-024-012</id_host>
+	<id_ip>10.67.24.12</id_ip>
+	<id_mac>04-D9-F5-81-FB-29</id_mac>
+	<id_office>disp</id_office>
+	<id_structure>skoray</id_structure>
+  </inventory>

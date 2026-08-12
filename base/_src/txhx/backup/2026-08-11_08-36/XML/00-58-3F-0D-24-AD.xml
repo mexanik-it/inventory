@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+  <inventory>
+	<id_date>05.06.2026</id_date>
+	<id_mb>ASUSTeK PRIME B365M-C</id_mb>
+	<id_cpu>Intel(R) i5-9400 2.90GHz </id_cpu>
+	<id_mem>8Gb</id_mem>
+	<id_hdd>FOXLINE FLSSD256X5</id_hdd>
+	<id_hdd_size>SSD 256Gb</id_hdd_size>
+	<id_sys>ALT Workstation 10.4</id_sys>
+	<id_host>dpk5324</id_host>
+	<id_ip>10.67.11.32</id_ip>
+	<id_mac>00:58:3F:0D:24:AD</id_mac>
+	<id_office>312</id_office>
+	<id_structure>uprav</id_structure>
+  </inventory>

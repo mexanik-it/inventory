@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+  <inventory>
+	<id_date>23.06.2026</id_date>
+	<id_mb>Gigabyte H410M H V3</id_mb>
+	<id_cpu>Intel(R) i3-10105 3.70GHz</id_cpu>
+	<id_mem>16Gb</id_mem>
+	<id_hdd>Samsung SSD 870 EVO 500GB</id_hdd>
+	<id_hdd_size>465Gb</id_hdd_size>
+	<id_sys>Windows 10 Pro</id_sys>
+	<id_host>WS-036-025</id_host>
+	<id_ip>192.168.36.25</id_ip>
+	<id_mac>18-C0-4D-CD-F6-5E</id_mac>
+	<id_office>5</id_office>
+	<id_structure>stomat</id_structure>
+  </inventory>

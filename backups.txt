@@ -1,0 +1,6 @@
+Time	Action	Details	Status	Error	Generated: 2026-08-10 11:47:40
+2026-08-10 11:47:40	START	Backup started	RUNNING	
+2026-08-10 11:47:40	COPY config.ini	C:\inventory\data\remote\config.ini	OK	
+2026-08-10 11:47:40	COPY report.pdf	C:\inventory\data\remote\report.pdf	OK	
+
+Total: 2, OK: 2, Fail: 0

@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8'?>
+  <inventory>
+	<id_date>06.05.2026</id_date>
+	<id_mb>ASRock J3355M</id_mb>
+	<id_cpu>Intel(R) J3355 2.00GHz</id_cpu>
+	<id_mem>6Gb</id_mem>
+	<id_hdd>WDC WD5000BPVT-2</id_hdd>
+	<id_hdd_size>500 GB/466 GiB</id_hdd_size>
+	<id_sys>ALT Workstation 8.2</id_sys>
+	<id_ip>192.168.0.139</id_ip>
+	<id_mak>70:85:c2:43:de:f1</id_mak>
+	<id_office>sleep</id_office>
+	<id_structure>home</id_structure>
+  </inventory>
