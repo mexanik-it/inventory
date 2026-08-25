@@ -1,0 +1,48 @@
+#include "main.h"
+
+/***************************************************************************************************/
+/* возвращает название и номер операционной системы                                                */
+/***************************************************************************************************/
+
+bool TInventory::get_sys() {
+  HKEY hKey;
+  LONG result = RegOpenKeyExA(HKEY_LOCAL_MACHINE,
+    "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion",
+    0, KEY_READ, & hKey);
+
+  if (result != ERROR_SUCCESS) {
+    cout << "Failed to open registry key" << endl;
+    return false;
+  }
+
+  char value[256] = {
+    0
+  };
+  DWORD valueSize = sizeof(value);
+
+  result = RegQueryValueExA(hKey, "ProductName", nullptr, nullptr,
+    (LPBYTE) value, & valueSize);
+
+  RegCloseKey(hKey);
+
+  if (result == ERROR_SUCCESS) {
+    id_sys = value;
+  } else {
+    cout << "Failed to read ProductName from registry" << endl;
+    return false;
+  }
+
+  // cutting off the excess
+    size_t pos = id_sys.find(" 2021");
+    if (pos != std::string::npos) {
+        id_sys.erase(pos);
+    }  
+
+    pos = id_sys.find(" LTSC");
+    if (pos != std::string::npos) {
+        id_sys.erase(pos);
+    }  
+
+
+  return true;
+}

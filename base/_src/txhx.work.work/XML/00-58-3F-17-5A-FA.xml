@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<inventory>
+	<id_date>24.08.2026</id_date>
+	<id_mb>Aquarius AQH310CM</id_mb>
+	<id_cpu>Intel(R) i5-9400 2.90GHz</id_cpu>
+	<id_mem>8GB</id_mem>
+	<id_hdd>FOXLINE_FLSSD256X5 </id_hdd>
+	<id_hdd_size>SSD 260Gb</id_hdd_size>
+	<id_sys>ALT Workstation 9.0</id_sys>
+	<id_prn>HP LaserJet 1320</id_prn>
+	<id_host>1051a2</id_host>
+	<id_ip>10.67.64.73</id_ip>
+	<id_mac>00:58:3F:17:5A:FA</id_mac>
+	<id_office>828</id_office>
+	<id_structure>pol1</id_structure>
+</inventory>
