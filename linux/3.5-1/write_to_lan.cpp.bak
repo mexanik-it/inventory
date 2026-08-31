@@ -1,0 +1,34 @@
+#include <iostream>
+#include <string>
+#include "main.h"
+
+#include <iostream>
+#include <fstream>
+
+bool copyFile(const std::string& source, const std::string& destination) {
+  std::ifstream src(source, std::ios::binary);
+  std::ofstream dst(destination, std::ios::binary);
+
+  if (!src.is_open() || !dst.is_open()) {
+      return false;
+        }
+
+  dst << src.rdbuf();
+
+  src.close();
+  dst.close();
+  return true;
+}
+
+bool TInventory::write_to_lan( ) {
+
+  if ( copyFile( id_filename, "//10.67.2.33/INVENTORY-BASE") ) {
+      cout << "Файл скопирован успешно локально" << endl;
+      return true;
+        } else {
+      cerr << "Ошибка при копировании файла локально" << endl;
+        return false;
+    }
+
+  /* end of copy file */
+}

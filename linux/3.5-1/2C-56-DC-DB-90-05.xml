@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<inventory>
+	<id_date>31.08.2026</id_date>
+	<id_mb>ASUSTeK A68HM-K</id_mb>
+	<id_cpu>AMD Athlon(tm) X2 340</id_cpu>
+	<id_mem>6GB</id_mem>
+	<id_hdd>TOSHIBA DT01ACA100</id_hdd>
+	<id_hdd_size>HDD 1000Gb</id_hdd_size>
+	<id_sys>CentOS Stream 9</id_sys>
+	<id_prn>unknown</id_prn>
+	<id_host>localhost</id_host>
+	<id_ip>192.168.0.172</id_ip>
+	<id_mac>2C:56:DC:DB:90:05</id_mac>
+	<id_office>34232</id_office>
+	<id_structure>sddsad</id_structure>
+	<id_inv_number>4534243</id_inv_number>
+</inventory>
