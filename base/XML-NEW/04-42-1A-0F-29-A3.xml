@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+  <inventory>
+	<id_date>26.08.2026</id_date>
+	<id_mb>ASUSTeK PRIME H510M-R</id_mb>
+	<id_cpu>Intel i3-10100 3.60GHz</id_cpu>
+	<id_mem>16Gb</id_mem>
+	<id_hdd>unknown</id_hdd>
+	<id_hdd_size>unknown</id_hdd_size>
+	<id_sys>Windows 10 Pro</id_sys>
+	<id_prn>HP Color LaserJet Pro MFP 4303</id_prn>
+	<id_host>WS-014-0198</id_host>
+	<id_ip>192.168.56.1</id_ip>
+	<id_mac>04-42-1A-0F-29-A3</id_mac>
+	<id_office>fogelz</id_office>
+	<id_structure>pol1</id_structure>
+  </inventory>

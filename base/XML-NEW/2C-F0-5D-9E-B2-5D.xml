@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+  <inventory>
+	<id_date>25.08.2026</id_date>
+	<id_mb>Micro-Star International Co., Ltd.  A320M-A PRO (MS-7C51)</id_mb>
+	<id_cpu>AMD Ryzen 5 3400G with Radeon Vega Graphics</id_cpu>
+	<id_mem>6Gb</id_mem>
+	<id_hdd>unknown</id_hdd>
+	<id_hdd_size>unknown</id_hdd_size>
+	<id_sys>Windows 10 Pro</id_sys>
+	<id_prn>гыук</id_prn>
+	<id_host>WS-014-146</id_host>
+	<id_ip>10.67.14.146</id_ip>
+	<id_mac>2C-F0-5D-9E-B2-5D</id_mac>
+	<id_office>reg1</id_office>
+	<id_structure>pol1</id_structure>
+  </inventory>

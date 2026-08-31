@@ -1,0 +1,113 @@
+#include <iostream>
+#include "main.h"
+
+/***************************************************************************************************/
+/* возвращает производителя жесткого диска и название модели                                       */
+/***************************************************************************************************/
+
+/*-------------------------------------------------------------------------------------------------*/
+/*                 модуль получения производителя жесткого диска и название модели                 */
+/*-------------------------------------------------------------------------------------------------*/
+
+#include <windows.h>
+#include <string>
+#include <iostream>
+#include <algorithm>
+#include <cctype>
+#include <cstring> // Для strlen
+
+// trim: удаляет пробельные символы по краям строки
+static std::string trim(const std::string& str) {
+  size_t start = 0;
+  while (start < str.size() && std::isspace(static_cast<unsigned char>(str[start]))) {
+    ++start;
+  }
+  if (start == str.size()) {
+    return "";
+  }
+  size_t end = str.size() - 1;
+  while (end > start && std::isspace(static_cast<unsigned char>(str[end]))) {
+    --end;
+  }
+  return str.substr(start, end - start + 1);
+}
+
+// executeCommand: запускает команду через _popen и возвращает весь вывод
+static std::string executeCommand(const char* command) {
+  FILE* pipe = _popen(command, "r");
+  if (!pipe) {
+    return "";
+  }
+
+  char buffer[256];
+  std::string result;
+
+  while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+    // Убираем \n и \r из каждой строки
+    size_t len = std::strlen(buffer);
+    if (len > 0 && buffer[len - 1] == '\n') {
+      buffer[--len] = '\0';
+    }
+    if (len > 0 && buffer[len - 1] == '\r') {
+      buffer[--len] = '\0';
+    }
+    result += buffer;
+    result += '\n';
+  }
+
+  _pclose(pipe);
+  return result;
+}
+
+bool TInventory::get_hdd() {
+  // Используем /format:table, чтобы вывод был стабильнее
+  std::string output = executeCommand("wmic diskdrive get model /format:table");
+  if (output.empty()) {
+    std::cerr << "Failed to execute wmic or got empty output.\n";
+    return false;
+  }
+
+  // Ищем первую строку с данными (пропускаем заголовок)
+  size_t pos = 0;
+  bool headerSkipped = false;
+
+  while ((pos = output.find('\n', pos)) != std::string::npos) {
+    pos++; // переходим после \n
+    size_t lineEnd = output.find('\n', pos);
+    if (lineEnd == std::string::npos) lineEnd = output.size();
+
+    std::string line = output.substr(pos, lineEnd - pos);
+    line = trim(line);
+
+    if (line.empty()) {
+      pos = lineEnd;
+      continue;
+    }
+
+    // Первая непустая строка после заголовка — это данные
+    if (!headerSkipped) {
+      headerSkipped = true;
+      // Если строка всё ещё пустая или выглядит как заголовок (например, "Model"), пропускаем
+      std::string lowerLine = line;
+      std::transform(lowerLine.begin(), lowerLine.end(), lowerLine.begin(), ::tolower);
+      if (lowerLine.find("model") == 0 && lowerLine.size() <= 10) {
+        // Это заголовок, идём дальше
+        pos = lineEnd;
+        continue;
+      }
+      // Иначе это первая строка с данными — берём её
+      id_hdd = line;
+      break;
+    } else {
+      // Вторая и далее строки — это другие диски; если нужна только первая модель, выходим
+      break;
+    }
+  }
+
+  if (id_hdd.empty()) {
+    std::cerr << "Could not find disk model in wmic output.\n";
+    return false;
+  }
+
+  return true;
+}
