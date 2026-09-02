@@ -39,11 +39,11 @@ confirm() {
 # Передача файла для Linux
 confirm ""
 echo -e "${CYAN}Starting process ..${ORANGE}"
-if curl -T linux/inventory "ftp://a0831755:vbnz1002@ftp.denkin.ru/domains/denkin.ru/public_html/tmp/"; then
+if curl -T linux/3.5-1/inventory "ftp://a0831755:vbnz1002@ftp.denkin.ru/domains/denkin.ru/public_html/tmp/"; then
     echo -e "${GREEN}[Linux] - File transfer completed successfully...${RESET}"
 else
     echo -e "${RED}[Linux] - An error occurred while transferring the file...${RESET}"
-    exit 1
+# exit 1
 fi
 
 echo
@@ -51,12 +51,23 @@ echo
 # Передача файла для Windows
 confirm ""
 echo -e "${CYAN}Starting process ..${ORANGE}"
-if curl -T windows/inventory.exe "ftp://dimon:1002@86.110.167.96/ftp/_inventory/"; then
+if curl -T windows/x64/4.1-1/inventory.exe "ftp://dimon:1002@86.110.167.96/ftp/_inventory/"; then
     echo -e "${GREEN}[Windows] - File transfer completed successfully...${RESET}"
 else
     echo -e "${RED}[Windows] - An error occurred while transferring the file...${RESET}"
-    exit 1
+# exit 1
 fi
+
+# Передача файла для Windows
+confirm ""
+echo -e "${CYAN}Starting process ..${ORANGE}"
+if curl -T windows/x86/3.4-1/inventory_x86.exe "ftp://dimon:1002@86.110.167.96/ftp/_inventory/"; then
+    echo -e "${GREEN}[Windows] - File transfer completed successfully...${RESET}"
+else
+    echo -e "${RED}[Windows] - An error occurred while transferring the file...${RESET}"
+# exit 1
+fi
+
 
 echo
 # Аналог pause: ожидание нажатия любой клавиши
