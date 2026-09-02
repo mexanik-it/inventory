@@ -29,6 +29,18 @@ void checkHostEntry(struct hostent * hostentry);
 // to dotted-decimal format
 void checkIPbuffer(char *IPbuffer);
 
+struct DiskInfo {
+    std::string model;
+    long int size;
+    std::string type;
+};
+
+struct LanInfo {
+    std::string name;
+    std::string ip;
+    std::string mac;
+};
+
 class TInventory // имя класса
 {
   /* private:                                                      */

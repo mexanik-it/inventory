@@ -36,7 +36,7 @@ bool TInventory::write_to_file() {
     */
 
     // Записываем данные в файл
-    out << "<?xml version='1.0' encoding='UTF-8'?>" << endl; // Заголовок
+    out << "<?xml version='3.5-1' encoding='UTF-8'?>" << endl; // Заголовок
     out << "<inventory>" << endl;
     
     // Для красоты отступов используем R"(...)" (Raw string literal) — это удобнее для многострочного текста,
