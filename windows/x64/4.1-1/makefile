@@ -3,7 +3,7 @@ CXX = g++
 CXXFLAGS = -Wall -Wextra -std=c++20
 LDFLAGS = -static -static-libstdc++ -lws2_32 -lwininet -lwinspool -lole32 -loleaut32 -lwbemuuid
 
-SRCS = main.cpp added.cpp get_mb.cpp get_cpu.cpp           \
+SRCS = main.cpp added.cpp get_mb.cpp get_cpu.cpp get_hdd.cpp \
        get_mem.cpp get_ip.cpp get_host.cpp get_prn.cpp     \
        get_mac.cpp  get_other.cpp               \
        get_sys.cpp  get_filename.cpp   \

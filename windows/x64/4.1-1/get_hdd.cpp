@@ -7,148 +7,161 @@
 #include <algorithm>
 #include <cctype>
 #include <iostream>
+#include <wbemidl.h>
 
-static std::string trim(const std::string& str) {
-    size_t start = 0;
-    while (start < str.size() && std::isspace(static_cast<unsigned char>(str[start]))) {
-        ++start;
-    }
-    if (start == str.size()) return "";
 
-    size_t end = str.size() - 1;
-    while (end > start && std::isspace(static_cast<unsigned char>(str[end]))) {
-        --end;
-    }
-    return str.substr(start, end - start + 1);
+static unsigned long long wstrToUll(const std::wstring& s) {
+    if (s.empty()) return 0;
+    return _wcstoui64(s.c_str(), nullptr, 10);
 }
 
-// На случай, если в MinGW нет этого типа
-#ifndef STORAGE_DEVICE_SEEK_PENALTY_DESCRIPTOR
-struct STORAGE_DEVICE_SEEK_PENALTY_DESCRIPTOR {
-    DWORD Version;
-    DWORD Size;
-    BOOLEAN IncursSeekPenalty;
-};
-#endif
+/*
+static std::wstring formatSize(unsigned long long bytes) {
+    const wchar_t* units[] = {L"B", L"KB", L"MB", L"GB", L"TB"};
+    double size = static_cast<double>(bytes);
+    int unitIndex = 0;
+    while (size >= 1000.0 && unitIndex < 4) {
+        size /= 1000.0;
+        unitIndex++;
+    }
+    wchar_t buf[32];
+    int len = swprintf(buf, 32, L"%.1f %ls", size, units[unitIndex]);
+    return std::wstring(buf, len > 0 ? len : 0);
+}
+*/
 
-bool TInventory::get_all_disks_info(std::vector<DiskInfo>& disks) {
-    disks.clear();
+// ���������� formatDiskSize
+std::wstring formatDiskSize(unsigned long long bytes) {
+    const wchar_t* units[] = {L"b", L"Kb", L"Mb", L"Gb", L"Tb"};
+    double size = static_cast<double>(bytes);
+    int unitIndex = 0;
+    while (size >= 1000.0 && unitIndex < 4) {
+        size /= 1000.0;
+        unitIndex++;
+    }
+    // �������� � ������ (����������� ������� �����)
+    unsigned long long sizeInt = static_cast<unsigned long long>(size);
 
-    for (int i = 0; i < 32; ++i) {
-        char path[64];
-        std::sprintf(path, "\\\\.\\PhysicalDrive%d", i);
+    wchar_t buf[32];
+    int len = swprintf(buf, 32, L"%llu %ls", sizeInt, units[unitIndex]);
+    return std::wstring(buf, len > 0 ? len : 0);
+}
 
-        // ВАЖНО: запуск от администратора
-        HANDLE h = CreateFileA(path, GENERIC_READ | GENERIC_WRITE,
-                               FILE_SHARE_READ | FILE_SHARE_WRITE,
-                               nullptr, OPEN_EXISTING, 0, nullptr);
+std::vector<DiskInfo> getDisks() {
+    std::vector<DiskInfo> disks;
 
-        if (h == INVALID_HANDLE_VALUE) {
-            continue;
-        }
+    HRESULT hRes = CoInitializeEx(0, COINIT_MULTITHREADED);
+    if (FAILED(hRes)) return disks;
 
-        DiskInfo info;
-        info.sizeBytes = 0;
-        info.model = "Unknown";
-        info.type = "Unknown";
+    IWbemLocator* pLoc = nullptr;
+    hRes = CoCreateInstance(CLSID_WbemLocator, nullptr, CLSCTX_INPROC_SERVER,
+                            IID_IWbemLocator, reinterpret_cast<LPVOID*>(&pLoc));
+    if (FAILED(hRes) || !pLoc) {
+        CoUninitialize();
+        return disks;
+    }
 
-        // 1. Размер диска (геометрия)
-        DISK_GEOMETRY geo{};
-        DWORD bytesReturned = 0;
-        BOOL okGeo = DeviceIoControl(h, IOCTL_DISK_GET_DRIVE_GEOMETRY, nullptr, 0,
-                                     &geo, sizeof(geo), &bytesReturned, nullptr);
+    IWbemServices* pSvc = nullptr;
+    BSTR strResource = SysAllocString(L"ROOT\\Microsoft\\Windows\\Storage");
+    hRes = pLoc->ConnectServer(strResource, nullptr, nullptr,
+                               nullptr, 0, nullptr, nullptr, &pSvc);
+    SysFreeString(strResource);
+    if (FAILED(hRes) || !pSvc) {
+        pLoc->Release();
+        CoUninitialize();
+        return disks;
+    }
 
-        if (okGeo) {
-            info.sizeBytes = geo.Cylinders.QuadPart * geo.TracksPerCylinder *
-                             geo.SectorsPerTrack * geo.BytesPerSector;
-        } else {
-            CloseHandle(h);
-            continue;
-        }
+    CoSetProxyBlanket(pSvc, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE,
+                      nullptr, RPC_C_AUTHN_LEVEL_CALL,
+                      RPC_C_IMP_LEVEL_IMPERSONATE, nullptr, EOAC_NONE);
 
-        // 2. Модель диска (StorageDeviceProperty + STORAGE_DEVICE_DESCRIPTOR)
-        STORAGE_PROPERTY_QUERY query{};
-        query.PropertyId = StorageDeviceProperty;
-        query.QueryType = PropertyStandardQuery;
+    IEnumWbemClassObject* pEnumerator = nullptr;
+    BSTR strQuery = SysAllocString(
+        L"SELECT Model, SerialNumber, Size, MediaType FROM MSFT_PhysicalDisk");
+    BSTR strLang = SysAllocString(L"WQL");
 
-        STORAGE_DEVICE_DESCRIPTOR desc{};
-        desc.Version = sizeof(desc);
-        desc.Size = sizeof(desc);
+    hRes = pSvc->ExecQuery(strLang, strQuery,
+                           WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,
+                           nullptr, &pEnumerator);
+    SysFreeString(strQuery);
+    SysFreeString(strLang);
 
-        ULONG outSize = sizeof(desc) + 1024;
-        std::vector<char> buffer(outSize);
+    if (SUCCEEDED(hRes) && pEnumerator) {
+        IWbemClassObject* pclsObj = nullptr;
+        ULONG uReturn = 0;
+        while (pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn) == S_OK && uReturn == 1) {
+            DiskInfo info{};
+            info.sizeBytes = 0;
+            info.type = L"Unknown";
 
-        BOOL okDesc = DeviceIoControl(h, IOCTL_STORAGE_QUERY_PROPERTY, &query, sizeof(query),
-                                      buffer.data(), outSize, &bytesReturned, nullptr);
+            VARIANT varModel, varSerial, varSize, varMedia;
+            VariantInit(&varModel);
+            VariantInit(&varSerial);
+            VariantInit(&varSize);
+            VariantInit(&varMedia);
 
-        if (okDesc && bytesReturned >= sizeof(STORAGE_DEVICE_DESCRIPTOR)) {
-            const STORAGE_DEVICE_DESCRIPTOR* pDesc = reinterpret_cast<const STORAGE_DEVICE_DESCRIPTOR*>(buffer.data());
+            pclsObj->Get(L"Model", 0, &varModel, nullptr, nullptr);
+            pclsObj->Get(L"SerialNumber", 0, &varSerial, nullptr, nullptr);
+            pclsObj->Get(L"Size", 0, &varSize, nullptr, nullptr);
+            pclsObj->Get(L"MediaType", 0, &varMedia, nullptr, nullptr);
 
-            if (pDesc->ProductIdOffset != 0) {
-                const char* modelStr = reinterpret_cast<const char*>(buffer.data()) + pDesc->ProductIdOffset;
-                info.model = trim(std::string(modelStr));
+            if (varModel.vt == VT_BSTR && varModel.bstrVal)
+                info.model = varModel.bstrVal;
+            if (varSerial.vt == VT_BSTR && varSerial.bstrVal)
+                info.serialNumber = varSerial.bstrVal;
+
+            if (varSize.vt == VT_BSTR && varSize.bstrVal)
+                info.sizeBytes = wstrToUll(varSize.bstrVal);
+            else if (varSize.vt == VT_UI8)
+                info.sizeBytes = varSize.ullVal;
+
+            // MediaType: 3 = HDD, 4 = SSD
+            if (varMedia.vt == VT_I4) {
+                switch (varMedia.intVal) {
+                    case 3:  info.type = L"HDD"; break;
+                    case 4:  info.type = L"SSD"; break;
+                    default: info.type = L"Unknown"; break;
+                }
+            } else if (varMedia.vt == VT_UI4) {
+                unsigned int v = varMedia.uintVal;
+                if (v == 3) info.type = L"HDD";
+                else if (v == 4) info.type = L"SSD";
+                else info.type = L"Unknown";
             }
-        }
 
-        // 3. Тип диска: SSD vs HDD (Seek Penalty)
-        query.PropertyId = StorageDeviceSeekPenaltyProperty;
-
-        STORAGE_DEVICE_SEEK_PENALTY_DESCRIPTOR seekDesc{};
-        seekDesc.Version = sizeof(seekDesc);
-        seekDesc.Size = sizeof(seekDesc);
-
-        outSize = sizeof(seekDesc) + 64;
-        buffer.resize(outSize);
-
-        BOOL okSeek = DeviceIoControl(h, IOCTL_STORAGE_QUERY_PROPERTY, &query, sizeof(query),
-                                      buffer.data(), outSize, &bytesReturned, nullptr);
-
-        if (okSeek && bytesReturned >= sizeof(STORAGE_DEVICE_SEEK_PENALTY_DESCRIPTOR)) {
-            const STORAGE_DEVICE_SEEK_PENALTY_DESCRIPTOR* pSeek =
-                reinterpret_cast<const STORAGE_DEVICE_SEEK_PENALTY_DESCRIPTOR*>(buffer.data());
-
-            if (!pSeek->IncursSeekPenalty) {
-                info.type = "SSD";
-            } else {
-                info.type = "HDD";
-            }
-        }
-
-        if (info.sizeBytes > 0) {
             disks.push_back(info);
+
+            VariantClear(&varModel);
+            VariantClear(&varSerial);
+            VariantClear(&varSize);
+            VariantClear(&varMedia);
+            pclsObj->Release();
         }
-
-        CloseHandle(h);
+        pEnumerator->Release();
     }
 
-    if (disks.empty()) {
-        std::cerr << "No disks found. Run the program as Administrator!\n";
-        return false;
-    }
+    pSvc->Release();
+    pLoc->Release();
+    CoUninitialize();
 
-    // Заполняем legacy-поля (теперь id_hdd_size = "SSD 480Gb")
-    if (!disks.empty()) {
-        const auto& d = disks[0];
-        id_hdd = d.model;
+    return disks;
+}
 
-        uint64_t gb = d.sizeBytes / (1000ULL * 1000 * 1000);
-        id_hdd_size = d.type + " " + std::to_string(gb) + "Gb";
 
-        hdd_models.clear();
-        for (const auto& disk : disks) {
-            hdd_models.push_back(disk.model);
-        }
-    }
+bool TInventory::get_hdd( ) {
 
+    auto disks = getDisks();
+    for (const auto& d : disks) {
+/*        
+		  std::wcout << L"Model: " << d.model
+                   << L"\n  Serial: " << d.serialNumber
+                   << L"\n  Type: " << d.type
+                   << L"\n  Size: " << formatDiskSize(d.sizeBytes)
+                   << L" (" << d.sizeBytes << L" bytes)\n\n";
+*/
+	id_hdd = 
+    } 
     return true;
 }
 
-bool TInventory::get_hdd() {
-    std::vector<DiskInfo> dummy;
-    return get_all_disks_info(dummy);
-}
-
-bool TInventory::get_hdd_size() {
-    std::vector<DiskInfo> dummy;
-    return get_all_disks_info(dummy);
-}

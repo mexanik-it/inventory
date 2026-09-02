@@ -65,11 +65,14 @@ struct PrinterModel {
 
 // Структура для хранения информации об одном диске
 struct DiskInfo {
-    std::string model;
-    std::string size;
-    std::string type; // "SSD", "HDD" или "Unknown"
+    std::wstring model;
+    std::wstring serialNumber;
+    std::wstring type;
+    unsigned long long sizeBytes;
 };
 
+	std::wstring formatDiskSize(unsigned long long bytes);  // <-- добавляем объявление
+	std::vector<DiskInfo> getDisks();
 
 class TInventory // имя класса
 {
@@ -109,8 +112,8 @@ public: // спецификатор доступа public
   bool get_mem ( );
   bool get_ip  ( );
   bool get_mac ( );
-  std::vector<std::string> hdd_models;
-  bool get_hdd ( );
+  bool get_hdd( );
+  //bool get_hdd ( );
 
 // Новый метод: полная инвентаризация всех дисков
   //bool get_all_disks_info(std::vector<DiskInfo>& disks);

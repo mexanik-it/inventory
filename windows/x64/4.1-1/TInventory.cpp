@@ -50,8 +50,8 @@ bool TInventory::scan_id ( void ) { // функция (метод класса) 
 	cout << "CPU - error\n";
   if( !get_mem() )
 	cout << "MEM - error\n";
-//  if( !get_hdd() )
-//	cout << "HDD - error\n";
+  if( !get_hdd() )
+	cout << "HDD - error\n";
 //  if( !get_hdd_size() )
 //	cout << "HDD-SIZE - error\n";
   if( !get_ip() )
@@ -107,9 +107,9 @@ bool TInventory::print_id( void ) { // функция (метод класса) 
         << std::flush;
 
     // Вывод с разделителем
-    for(const auto& str : hdd_models) {
-        std::cout << str << ", ";
-    }
+    //for(const auto& str : hdd_models) {
+    //    std::cout << str << ", ";
+    //}
   return true;
 }
 

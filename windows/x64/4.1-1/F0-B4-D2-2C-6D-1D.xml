@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
   <inventory>
-	<id_date>26.08.2026</id_date>
+	<id_date>02.09.2026</id_date>
 	<id_mb>Gigabyte H510M H</id_mb>
 	<id_cpu>Intel i3-10100 3.60GHz</id_cpu>
 	<id_mem>8Gb</id_mem>
@@ -12,6 +12,6 @@
 	<id_ip>10.67.2.33</id_ip>
 	<id_mac>F0-B4-D2-2C-6D-1D</id_mac>
 	<id_office>ordin</id_office>
-	<id_structure>ppokoy</id_structure>
+	<id_structure>hyr</id_structure>
 
   </inventory>
