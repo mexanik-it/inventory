@@ -47,7 +47,6 @@ def parse_xml(file_path: Path) -> dict | None:
             "id_mac": get_text("id_mac"),
             "id_office": get_text("id_office"),
             "id_structure": get_text("id_structure"),
-            "id_inv_number": get_text("id_inv_number"),
         }
         return data
     except Exception:
@@ -126,7 +125,6 @@ def append_html_table_rows(html_path: Path, rows_data: list[dict]):
             f'        <td>{row.get("id_prn", "")}</td>\n'
             f'        <td>{row.get("id_office", "")}</td>\n'
             f'        <td>{row.get("id_structure", "")}</td>\n'
-            f'        <td>{row.get("id_inv_number", "")}</td>\n'
             f'      </tr>\n'
         )
         html_rows.append(html_row)

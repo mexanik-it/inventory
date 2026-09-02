@@ -1,0 +1,148 @@
+﻿#include "disk_info.h"
+
+#include <windows.h>
+#include <wbemidl.h>
+#include <cwchar>
+#include <iostream>
+
+#pragma comment(lib, "wbemuuid.lib")
+#pragma comment(lib, "ole32.lib")
+#pragma comment(lib, "oleaut32.lib")
+
+static unsigned long long wstrToUll(const std::wstring& s) {
+    if (s.empty()) return 0;
+    return _wcstoui64(s.c_str(), nullptr, 10);
+}
+
+static std::wstring formatSize(unsigned long long bytes) {
+    const wchar_t* units[] = {L"B", L"KB", L"MB", L"GB", L"TB"};
+    double size = static_cast<double>(bytes);
+    int unitIndex = 0;
+    while (size >= 1000.0 && unitIndex < 4) {
+        size /= 1000.0;
+        unitIndex++;
+    }
+    wchar_t buf[32];
+    int len = swprintf(buf, 32, L"%.1f %ls", size, units[unitIndex]);
+    return std::wstring(buf, len > 0 ? len : 0);
+}
+
+std::vector<DiskInfo> getDisks() {
+    std::vector<DiskInfo> disks;
+
+    HRESULT hRes = CoInitializeEx(0, COINIT_MULTITHREADED);
+    if (FAILED(hRes)) return disks;
+
+    IWbemLocator* pLoc = nullptr;
+    hRes = CoCreateInstance(CLSID_WbemLocator, nullptr, CLSCTX_INPROC_SERVER,
+                            IID_IWbemLocator, reinterpret_cast<LPVOID*>(&pLoc));
+    if (FAILED(hRes) || !pLoc) {
+        CoUninitialize();
+        return disks;
+    }
+
+    IWbemServices* pSvc = nullptr;
+    BSTR strResource = SysAllocString(L"ROOT\\Microsoft\\Windows\\Storage");
+    hRes = pLoc->ConnectServer(strResource, nullptr, nullptr,
+                               nullptr, 0, nullptr, nullptr, &pSvc);
+    SysFreeString(strResource);
+    if (FAILED(hRes) || !pSvc) {
+        pLoc->Release();
+        CoUninitialize();
+        return disks;
+    }
+
+    CoSetProxyBlanket(pSvc, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE,
+                      nullptr, RPC_C_AUTHN_LEVEL_CALL,
+                      RPC_C_IMP_LEVEL_IMPERSONATE, nullptr, EOAC_NONE);
+
+    IEnumWbemClassObject* pEnumerator = nullptr;
+    BSTR strQuery = SysAllocString(
+        L"SELECT Model, SerialNumber, Size, MediaType FROM MSFT_PhysicalDisk");
+    BSTR strLang = SysAllocString(L"WQL");
+
+    hRes = pSvc->ExecQuery(strLang, strQuery,
+                           WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,
+                           nullptr, &pEnumerator);
+    SysFreeString(strQuery);
+    SysFreeString(strLang);
+
+    if (SUCCEEDED(hRes) && pEnumerator) {
+        IWbemClassObject* pclsObj = nullptr;
+        ULONG uReturn = 0;
+        while (pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn) == S_OK && uReturn == 1) {
+            DiskInfo info{};
+            info.sizeBytes = 0;
+            info.type = L"Unknown";
+
+            VARIANT varModel, varSerial, varSize, varMedia;
+            VariantInit(&varModel);
+            VariantInit(&varSerial);
+            VariantInit(&varSize);
+            VariantInit(&varMedia);
+
+            pclsObj->Get(L"Model", 0, &varModel, nullptr, nullptr);
+            pclsObj->Get(L"SerialNumber", 0, &varSerial, nullptr, nullptr);
+            pclsObj->Get(L"Size", 0, &varSize, nullptr, nullptr);
+            pclsObj->Get(L"MediaType", 0, &varMedia, nullptr, nullptr);
+
+            if (varModel.vt == VT_BSTR && varModel.bstrVal)
+                info.model = varModel.bstrVal;
+            if (varSerial.vt == VT_BSTR && varSerial.bstrVal)
+                info.serialNumber = varSerial.bstrVal;
+
+            if (varSize.vt == VT_BSTR && varSize.bstrVal)
+                info.sizeBytes = wstrToUll(varSize.bstrVal);
+            else if (varSize.vt == VT_UI8)
+                info.sizeBytes = varSize.ullVal;
+
+            // MediaType: 3 = HDD, 4 = SSD
+            if (varMedia.vt == VT_I4) {
+                switch (varMedia.intVal) {
+                    case 3:  info.type = L"HDD"; break;
+                    case 4:  info.type = L"SSD"; break;
+                    default: info.type = L"Unknown"; break;
+                }
+            } else if (varMedia.vt == VT_UI4) {
+                unsigned int v = varMedia.uintVal;
+                if (v == 3) info.type = L"HDD";
+                else if (v == 4) info.type = L"SSD";
+                else info.type = L"Unknown";
+            }
+
+            disks.push_back(info);
+
+            VariantClear(&varModel);
+            VariantClear(&varSerial);
+            VariantClear(&varSize);
+            VariantClear(&varMedia);
+            pclsObj->Release();
+        }
+        pEnumerator->Release();
+    }
+
+    pSvc->Release();
+    pLoc->Release();
+    CoUninitialize();
+
+    return disks;
+}
+
+// ... (предыдущий код disk_info.cpp до конца getDisks) ...
+
+// Реализация formatDiskSize
+std::wstring formatDiskSize(unsigned long long bytes) {
+    const wchar_t* units[] = {L"b", L"Kb", L"Mb", L"Gb", L"Tb"};
+    double size = static_cast<double>(bytes);
+    int unitIndex = 0;
+    while (size >= 1000.0 && unitIndex < 4) {
+        size /= 1000.0;
+        unitIndex++;
+    }
+    // Приводим к целому (отбрасываем дробную часть)
+    unsigned long long sizeInt = static_cast<unsigned long long>(size);
+
+    wchar_t buf[32];
+    int len = swprintf(buf, 32, L"%llu %ls", sizeInt, units[unitIndex]);
+    return std::wstring(buf, len > 0 ? len : 0);
+}
