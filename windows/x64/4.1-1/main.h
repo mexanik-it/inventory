@@ -113,13 +113,6 @@ public: // спецификатор доступа public
   bool get_ip  ( );
   bool get_mac ( );
   bool get_hdd( );
-  //bool get_hdd ( );
-
-// Новый метод: полная инвентаризация всех дисков
-  //bool get_all_disks_info(std::vector<DiskInfo>& disks);
-  //bool get_all_hdds();                // заполняет hdd_models (полная инвентаризация)
-  //bool get_hdd_size( );
-
   bool get_host( );
   bool get_sys ( );
   bool get_prn ( );

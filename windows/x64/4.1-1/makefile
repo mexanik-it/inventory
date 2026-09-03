@@ -9,9 +9,6 @@ SRCS = main.cpp added.cpp get_mb.cpp get_cpu.cpp get_hdd.cpp \
        get_sys.cpp  get_filename.cpp   \
        write_to_file.cpp write_to_ftp.cpp write_to_lan.cpp \
        TInventory.cpp
-#	get_hdd.cpp
-
-# get_hdd_size.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 
@@ -46,3 +43,8 @@ clean:
 rebuild: clean all
 	@echo.
 	@echo [33mRebuild complete.[0m
+
+changelog:
+	@chcp 65001
+	@echo "Смотрите CHANGELOG.md"
+	@more ..\CHANGELOG.md

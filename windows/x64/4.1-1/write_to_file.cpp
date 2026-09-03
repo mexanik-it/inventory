@@ -12,7 +12,7 @@ bool TInventory::write_to_file() {
     }
 
     // Пишем XML с явными \n, без endl (чтобы не было лишних flush и платформенных различий)
-    out << "<?xml version='1.0' encoding='UTF-8'?>\n"
+    out << "<?xml version='4.1-1' encoding='UTF-8'?>\n"
           << "  <inventory>\n"
           << "\t<id_date>"      << id_date       << "</id_date>\n"
           << "\t<id_mb>"        << id_mb         << "</id_mb>\n"

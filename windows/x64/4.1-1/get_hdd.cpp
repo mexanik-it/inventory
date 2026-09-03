@@ -30,7 +30,7 @@ static std::wstring formatSize(unsigned long long bytes) {
 }
 */
 
-// Реализация formatDiskSize
+// Р РµР°Р»РёР·Р°С†РёСЏ formatDiskSize
 std::wstring formatDiskSize(unsigned long long bytes) {
     const wchar_t* units[] = {L"b", L"Kb", L"Mb", L"Gb", L"Tb"};
     double size = static_cast<double>(bytes);
@@ -39,7 +39,7 @@ std::wstring formatDiskSize(unsigned long long bytes) {
         size /= 1000.0;
         unitIndex++;
     }
-    // Приводим к целому (отбрасываем дробную часть)
+    // РџСЂРёРІРѕРґРёРј Рє С†РµР»РѕРјСѓ (РѕС‚Р±СЂР°СЃС‹РІР°РµРј РґСЂРѕР±РЅСѓСЋ С‡Р°СЃС‚СЊ)
     unsigned long long sizeInt = static_cast<unsigned long long>(size);
 
     wchar_t buf[32];
@@ -148,20 +148,37 @@ std::vector<DiskInfo> getDisks() {
     return disks;
 }
 
-
-bool TInventory::get_hdd( ) {
-
-    auto disks = getDisks();
-    for (const auto& d : disks) {
-/*        
-		  std::wcout << L"Model: " << d.model
-                   << L"\n  Serial: " << d.serialNumber
-                   << L"\n  Type: " << d.type
-                   << L"\n  Size: " << formatDiskSize(d.sizeBytes)
-                   << L" (" << d.sizeBytes << L" bytes)\n\n";
-*/
-	id_hdd = 
-    } 
-    return true;
+std::string wstring_to_string(const std::wstring& wstr) {
+    if (wstr.empty()) return "";
+    int size_needed = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, nullptr, 0, nullptr, nullptr);
+    std::string str(size_needed, 0);
+    WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, &str[0], size_needed, nullptr, nullptr);
+    str.erase(std::remove(str.begin(), str.end(), '\0'), str.end());
+    return str;
 }
 
+bool TInventory::get_hdd() {
+    auto disks = getDisks();
+    id_hdd.clear();
+    id_hdd_size.clear();
+
+    if (disks.empty()) {
+        id_hdd = "Unknown";
+        id_hdd_size = "Unknown";
+        return true;
+    }
+
+    for (size_t i = 0; i < disks.size(); ++i) {
+        const auto& d = disks[i];
+
+        id_hdd += wstring_to_string(d.model);
+        id_hdd_size += wstring_to_string(formatDiskSize(d.sizeBytes));
+
+        if (i + 1 < disks.size()) {
+            id_hdd += " / ";
+            id_hdd_size += " / ";
+        }
+    }
+
+    return true;
+}
