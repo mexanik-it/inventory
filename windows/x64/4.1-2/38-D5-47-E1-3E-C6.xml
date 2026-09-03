@@ -11,7 +11,9 @@
 	<id_host>KOMPUTER</id_host>
 	<id_ip>192.168.0.129</id_ip>
 	<id_mac>38-D5-47-E1-3E-C6</id_mac>
-	<id_office>342</id_office>
-	<id_structure>dfs</id_structure>
+	<id_office>3213</id_office>
+	<id_structure>fsdfsd</id_structure>
+
+	<id_inv_number>43242</id_inv_number>
 
   </inventory>

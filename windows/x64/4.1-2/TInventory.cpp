@@ -6,14 +6,10 @@
 
 using namespace std;
 
-    // Комбинируем цвета и эффекты
-    // std::cout << bold << blue << "Заголовок программы" << reset << std::endl;
-
 TInventory::TInventory( ) {  // конструктор класса
 
     cout << endl;
-//    cout << yellow  << "═════════════════╣" << green  << "  Created by Dmitry Denkin (c) 2026 " << yellow << "╠═════════════════" << endl;
-    cout << Colors::yellow  << "                                                               [ver 4.1-1]" << Colors::reset << endl;
+    cout << Colors::yellow  << "                                                               [ver 4.1-2]" << Colors::reset << endl;
     cout << Colors::brown  << "=================|" << Colors::green  << "  Created by Dmitry Denkin (c) 2026  " << Colors::brown << "|==================" << endl;
     cout << Colors::blue    << " *******          " << Colors::cyan << " S y s t e m   I n f o r m a t i o n " << Colors::blue   << "           *******" << Colors::reset << endl << endl;
     time_t current_time = time( nullptr );
@@ -44,6 +40,7 @@ bool TInventory::delete_file( ) {
 }
 
 bool TInventory::scan_id ( void ) { // функция (метод класса) сканирует устройства (комплектуху)
+
   if( !get_mb() )
 	cout << "MB - error TInventory\n";
   if( !get_cpu() )
@@ -52,8 +49,6 @@ bool TInventory::scan_id ( void ) { // функция (метод класса) 
 	cout << "MEM - error\n";
   if( !get_hdd() )
 	cout << "HDD - error\n";
-//  if( !get_hdd_size() )
-//	cout << "HDD-SIZE - error\n";
   if( !get_ip() )
 	cout << "IP - error\n";
   if( !get_mac() )
@@ -66,8 +61,6 @@ bool TInventory::scan_id ( void ) { // функция (метод класса) 
 	cout << "PRN - error\n";
   if( !get_filename( ) )
 	cout << "FILENAME - error\n";
-//  if( !get_other( ) )
-//	cout << "FILENAME - error\n";
   return true;
 }
 
@@ -83,12 +76,6 @@ bool TInventory::print_id( void ) { // функция (метод класса) 
 
   clearLines_up(2);   // очищаем 2 строки выше
 
-/* 
-   if (isatty(STDOUT_FILENO)) {
-        // Стираем текущую строку и поднимаемся на 1 — повторяем 2 раза
-        std::cout << "\033[K\033[A\033[K\033[A\033[K\033[A\033[K\033[A" << std::flush;
-    }
-*/
     std::cout << endl
         << "==> curr-date:\t"    << id_print( id_date      ) 
         << "==> mother:\t"       << id_print( id_mb        )
@@ -106,17 +93,15 @@ bool TInventory::print_id( void ) { // функция (метод класса) 
         << "==> structure:\t"    << id_print( id_structure ) << "\n"
         << std::flush;
 
-    // Вывод с разделителем
-    //for(const auto& str : hdd_models) {
-    //    std::cout << str << ", ";
-    //}
   return true;
 }
+
 
 void TInventory::errMessage( string str ) {
   cout << Colors::red << "Error: " << Colors::white << str << Colors::reset << endl;
   return;
 }
+
 void TInventory::warMessage( string str ) {
   cout << Colors::magenta << "Warning: " << Colors::white << str << Colors::reset << endl;
   return;

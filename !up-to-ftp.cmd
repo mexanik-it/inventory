@@ -8,7 +8,7 @@ echo.[0m
 choice /T 5 /D Y /M "Автопродолжение через 5 сек. Продолжить? "
 if %errorlevel%==1 (
 echo  [96m Starting process .. [93m
-curl -T linux/inventory ftp://a0831755:vbnz1002@ftp.denkin.ru/domains/denkin.ru/public_html/tmp/
+curl -T linux\3.5-1\inventory ftp://a0831755:vbnz1002@ftp.denkin.ru/domains/denkin.ru/public_html/tmp/
 ) else (
     echo Выполнение прервано
     exit 1
@@ -23,7 +23,7 @@ echo.[0m
 choice /T 5 /D Y /M "Автопродолжение через 5 сек. Продолжить? "
 if %errorlevel%==1 (
 echo  [96m Starting process .. [93m
-curl -T windows-x86/inventory-x86.exe ftp://a0831755:vbnz1002@ftp.denkin.ru/domains/denkin.ru/public_html/tmp/
+curl -T windows\x86\3.4-1\inventory-x86.exe ftp://a0831755:vbnz1002@ftp.denkin.ru/domains/denkin.ru/public_html/tmp/
 ) else (
     echo Выполнение прервано
     exit 1
@@ -38,7 +38,7 @@ echo.[0m
 choice /T 5 /D Y /M "Автопродолжение через 5 сек. Продолжить? "
 if %errorlevel%==1 (
 echo  [96m Starting process .. [93m
-curl -T windows-x64/inventory.exe ftp://a0831755:vbnz1002@ftp.denkin.ru/domains/denkin.ru/public_html/tmp/
+curl -T windows\x64\4.1-1\inventory.exe ftp://a0831755:vbnz1002@ftp.denkin.ru/domains/denkin.ru/public_html/tmp/
 ) else (
     echo Выполнение прервано
     exit 1

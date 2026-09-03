@@ -1,0 +1,39 @@
+#include "main.h"
+
+/***************************************************************************************************/
+/* возвращает mac-адрес сетевой карты                                                              */
+/***************************************************************************************************/
+
+bool TInventory::get_mac() {
+
+  FILE * pipe = _popen("getmac", "r");
+  if (!pipe) return "Command execution error:";
+
+  char buffer[256];
+  std::string result;
+
+  // Пропускаем первые строки с заголовком
+  for (int i = 0; i < 3; ++i) {
+    if (fgets(buffer, sizeof(buffer), pipe) == nullptr) break;
+  }
+
+  // Читаем первую строку с MAC‑адресом
+  if (fgets(buffer, sizeof(buffer), pipe)) {
+    result = buffer;
+  }
+  _pclose(pipe);
+
+  // Находим позицию первого перевода строки
+  size_t pos = result.find(' ');
+
+  // Если перевод строки найден, удаляем всё начиная с него
+  if (pos != std::string::npos) {
+    result.erase(pos);
+  }
+  id_mac = result;
+      for (char& c : id_mac) {
+        c = std::toupper(static_cast<unsigned char>(c));
+    }
+
+  return true;
+}
