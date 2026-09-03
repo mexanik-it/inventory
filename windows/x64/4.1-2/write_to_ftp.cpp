@@ -1,9 +1,5 @@
-#include <windows.h>
-#include <wininet.h>
-#include <iostream>
 #include "main.h"
-
-//#pragma comment(lib, "wininet.lib")
+#include <wininet.h>
 
 bool uploadFileToFTP(const char* server, const char* username,
                   const char* password, const char* localFile,

@@ -1,5 +1,7 @@
 #pragma once
 
+// --- WINSOCK И WINDOWS: СТРОГО В ЭТОМ ПОРЯДКЕ ---
+// winsock2.h должен быть ПЕРЕД windows.h, иначе будет warning/ошибки
 #ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -12,41 +14,40 @@
 #include <thread>
 #include <chrono>
 #include <ctime>
-#include <vector>
 #include <algorithm>
 #include <array>
+#include <vector>
 
-#ifdef _WIN32
-#include <windows.h>
-#endif
+#include <windows.h>       // теперь можно
+// -------------------------------------------------
 
-#include "colors.h"
+#include "colors.h"        // если colors.h сам тянет windows.h — это ОК, 
+                            // потому что winsock2 уже подключён выше
+
+
+// Не делай using namespace std; в заголовочном файле — это плохая практика
 
 // --- Глобальные функции (диалоги, утилиты) ---
-
 bool askYesNo(const std::string& prompt, const std::string& exit_command = "quit");
 
 char* replace(char* src, int replaceme, int newchar);
 
-// Сетевые функции
 void checkHostName(int hostname);
 void checkHostEntry(struct hostent* hostentry);
 void checkIPbuffer(char* IPbuffer);
 
-// Функции очистки консоли
+// Консольные утилиты очистки
 void clearLines_up(int count);
 void clearlines_down(int n);
 void clear_current_line();
 void clear_n_lines(int n);
 void clear_n_lines_from_row(int start_y, int n);
 
-// Удаление подстроки
 std::string remove_substring(const std::string&, const std::string&);
 void rem_subs(std::string id_str, const std::string& to_remove);
 
 
 // --- Структуры ---
-
 struct PrinterModel {
     std::string part1;
     std::string part2;
@@ -66,7 +67,6 @@ std::vector<DiskInfo> getDisks();
 
 
 // --- Класс TInventory ---
-
 class TInventory
 {
 public:
@@ -74,21 +74,21 @@ public:
 
     // Поля данных (инициализация в классе допустима в C++20)
     std::string
-        id_date       = "unknown",      // дата
-        id_mb         = "unknown",      // название материнской платы
-        id_cpu        = "unknown",      // название процессора
-        id_mem        = "unknown",      // общий объём оперативной памяти
+        id_date       = "unknown",
+        id_mb         = "unknown",
+        id_cpu        = "unknown",
+        id_mem        = "unknown",
         id_ip         = "unknown",
         id_mac        = "unknown",
         id_hdd        = "unknown",
         id_hdd_size   = "unknown",
-        id_host       = "unknown",      // название компьютера
-        id_sys        = "unknown",      // операционная система
-        id_prn        = "unknown",      // название принтера
+        id_host       = "unknown",
+        id_sys        = "unknown",
+        id_prn        = "unknown",
         id_filename   = "unknown",
-        id_office     = "unknown",      // кабинет
-        id_structure  = "unknown",      // здание
-        id_inv_number = "unknown";      // инвентарный номер
+        id_office     = "unknown",
+        id_structure  = "unknown",
+        id_inv_number = "unknown";
 
     TInventory();
 

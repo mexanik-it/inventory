@@ -8,15 +8,15 @@ static std::string product_type_to_name(DWORD productType) {
     switch (productType) {
         // Явно добавляем 191 (0xBF) как IoT Enterprise LTSC
         case 191:
-        case 0x000000B3: return "IoT Enterprise LTSC";
-        case 0x000000B4: return "IoT Enterprise LTSC";
+        case 0x000000B3: return "Enterprise LTSC";
+        case 0x000000B4: return "Enterprise LTSC";
 
         case 0x00000067: return "Home";
         case 0x0000006A: return "Pro N";
         case 0x0000006F: return "Single Language";
         case 0x00000070: return "Country Specific";
-        case 0x0000007D: return "Ent LTSC";
-        case 0x0000007E: return "Ent LTSC N";
+        case 0x0000007D: return "Enterprise LTSC";
+        case 0x0000007E: return "Enterprise LTSC N";
         case 0x00000082: return "Cloud";
         case 0x00000083: return "Cloud N";
         case 0x000000B5: return "IoT UAP Container";
@@ -25,7 +25,7 @@ static std::string product_type_to_name(DWORD productType) {
         case PRODUCT_HOME_BASIC:      return "Home Basic";
         case PRODUCT_HOME_PREMIUM:    return "Home Premium";
         case PRODUCT_PROFESSIONAL:    return "Pro";
-        case PRODUCT_ENTERPRISE:     return "Ent";
+        case PRODUCT_ENTERPRISE:     return "Enterprise";
         case PRODUCT_ULTIMATE:        return "Ultimate";
         case PRODUCT_CORE:            return "";
         case PRODUCT_EDUCATION:       return "Education";

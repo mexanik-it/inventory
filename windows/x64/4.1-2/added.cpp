@@ -6,8 +6,8 @@
 #include <cctype>
 #include <fcntl.h>
 
-#include <windows.h>
-#include <ios>
+//#include <windows.h>
+//#include <ios>
 
 #include "main.h"
 
