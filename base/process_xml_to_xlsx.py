@@ -183,6 +183,7 @@ def main():
         "id_prn",
         "id_office",
         "id_structure",
+        "id_inv_number",
     ]
 
     # Стили шрифтов

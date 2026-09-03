@@ -1,4 +1,4 @@
-<?xml version='4.1-1' encoding='UTF-8'?>
+<?xml version='5.1-1' encoding='UTF-8'?>
   <inventory>
 	<id_date>03.09.2026</id_date>
 	<id_mb>Gigabyte H510M H</id_mb>
@@ -9,11 +9,11 @@
 	<id_sys>Windows 10 Enterprise LTSC</id_sys>
 	<id_prn>HP LaserJet Pro M428fdw</id_prn>
 	<id_host>KOMPUTER</id_host>
-	<id_ip>10.67.2.33</id_ip>
-	<id_mac>F0-B4-D2-2C-6D-1D</id_mac>
-	<id_office>4322</id_office>
-	<id_structure>dsfdss</id_structure>
+	<id_ip>169.254.146.206 / 10.67.2.33</id_ip>
+	<id_mac>F0-B4-D2-2C-6D-1D / 18-C0-4D-D7-67-0E</id_mac>
+	<id_office>4324234</id_office>
+	<id_structure>dsfdsfsdf</id_structure>
 
-	<id_inv_number>32432</id_inv_number>
+	<id_inv_number>3214324</id_inv_number>
 
   </inventory>

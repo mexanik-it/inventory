@@ -15,20 +15,6 @@ static unsigned long long wstrToUll(const std::wstring& s) {
     return _wcstoui64(s.c_str(), nullptr, 10);
 }
 
-/*
-static std::wstring formatSize(unsigned long long bytes) {
-    const wchar_t* units[] = {L"B", L"KB", L"MB", L"GB", L"TB"};
-    double size = static_cast<double>(bytes);
-    int unitIndex = 0;
-    while (size >= 1000.0 && unitIndex < 4) {
-        size /= 1000.0;
-        unitIndex++;
-    }
-    wchar_t buf[32];
-    int len = swprintf(buf, 32, L"%.1f %ls", size, units[unitIndex]);
-    return std::wstring(buf, len > 0 ? len : 0);
-}
-*/
 
 // Р РµР°Р»РёР·Р°С†РёСЏ formatDiskSize
 std::wstring formatDiskSize(unsigned long long bytes) {
@@ -78,7 +64,7 @@ std::vector<DiskInfo> getDisks() {
 
     IEnumWbemClassObject* pEnumerator = nullptr;
     BSTR strQuery = SysAllocString(
-        L"SELECT Model, SerialNumber, Size, MediaType FROM MSFT_PhysicalDisk");
+        L"SELECT Model, SerialNumber, Size, MediaType, BusType FROM MSFT_PhysicalDisk");
     BSTR strLang = SysAllocString(L"WQL");
 
     hRes = pSvc->ExecQuery(strLang, strQuery,
@@ -95,16 +81,34 @@ std::vector<DiskInfo> getDisks() {
             info.sizeBytes = 0;
             info.type = L"Unknown";
 
-            VARIANT varModel, varSerial, varSize, varMedia;
+            VARIANT varModel, varSerial, varSize, varMedia, varBus;
             VariantInit(&varModel);
             VariantInit(&varSerial);
             VariantInit(&varSize);
             VariantInit(&varMedia);
+            VariantInit(&varBus);
 
             pclsObj->Get(L"Model", 0, &varModel, nullptr, nullptr);
             pclsObj->Get(L"SerialNumber", 0, &varSerial, nullptr, nullptr);
             pclsObj->Get(L"Size", 0, &varSize, nullptr, nullptr);
             pclsObj->Get(L"MediaType", 0, &varMedia, nullptr, nullptr);
+            pclsObj->Get(L"BusType", 0, &varBus, nullptr, nullptr);
+
+            // BusType == 7 пїЅ пїЅпїЅпїЅ USB, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+            int busType = 0;
+            if (varBus.vt == VT_I4)  busType = varBus.intVal;
+            else if (varBus.vt == VT_UI4) busType = varBus.uintVal;
+
+            if (busType == 7) {
+                // USB-пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+                VariantClear(&varModel);
+                VariantClear(&varSerial);
+                VariantClear(&varSize);
+                VariantClear(&varMedia);
+                VariantClear(&varBus);
+                pclsObj->Release();
+                continue;
+            }
 
             if (varModel.vt == VT_BSTR && varModel.bstrVal)
                 info.model = varModel.bstrVal;
@@ -116,7 +120,6 @@ std::vector<DiskInfo> getDisks() {
             else if (varSize.vt == VT_UI8)
                 info.sizeBytes = varSize.ullVal;
 
-            // MediaType: 3 = HDD, 4 = SSD
             if (varMedia.vt == VT_I4) {
                 switch (varMedia.intVal) {
                     case 3:  info.type = L"HDD"; break;
@@ -136,6 +139,7 @@ std::vector<DiskInfo> getDisks() {
             VariantClear(&varSerial);
             VariantClear(&varSize);
             VariantClear(&varMedia);
+            VariantClear(&varBus);
             pclsObj->Release();
         }
         pEnumerator->Release();
@@ -158,39 +162,29 @@ std::string wstring_to_string(const std::wstring& wstr) {
 }
 
 bool TInventory::get_hdd() {
-auto macs = get_mac_addresses();
-id_mac.clear();
-id_ip.clear();
+    auto disks = getDisks();
+    id_hdd.clear();
+    id_hdd_size.clear();
 
-if (macs.empty()) {
-    id_mac = "Unknown";
-    id_ip = "Unknown";
-    // return true; // раскомментируй, если это внутри функции, где нужен ранний выход
-} else {
-    for (size_t i = 0; i < macs.size(); ++i) {
-        const auto& m = macs[i];
+    if (disks.empty()) {
+        id_hdd = "Unknown";
+        id_hdd_size = "Unknown";
+        return true;
+    }
 
-        // MAC: просто добавляем, если есть
-        if (!m.mac.empty()) {
-            id_mac += m.mac;
-        } else {
-            id_mac += "NoMAC";
-        }
+    for (size_t i = 0; i < disks.size(); ++i) {
+        const auto& d = disks[i];
 
-        // IP: если есть IPv4 — добавляем, иначе "(none)"
-        if (!m.ipv4.empty()) {
-            id_ip += m.ipv4;
-        } else {
-            id_ip += "(none)";
-        }
+        id_hdd += wstring_to_string(d.model);
+	id_hdd_size += wstring_to_string(d.type);
+	id_hdd_size += "-";
+        id_hdd_size += wstring_to_string(formatDiskSize(d.sizeBytes));
 
-        // Разделитель между адаптерами, если дальше есть ещё
-        if (i + 1 < macs.size()) {
-            id_mac += " / ";
-            id_ip += " / ";
+        if (i + 1 < disks.size()) {
+            id_hdd += " / ";
+            id_hdd_size += " / ";
         }
     }
-}
 
     return true;
 }

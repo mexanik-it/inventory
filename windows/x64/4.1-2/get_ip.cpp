@@ -10,7 +10,7 @@ tun0: 7.13.195.7/32
 */
 
 
-bool TInventory::get_ip( ) {
+bool TInventory::get_lan( ) {
     WSADATA wsaData;
     int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
     if (result != 0) {

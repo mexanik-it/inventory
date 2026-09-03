@@ -18,13 +18,7 @@ rem с русскими не работает ==> lha.exe a "f:\ archive\flash-'%dt%'".lha / person
 ::7z a -pvbnz1002 ..\INST-OIT-"%dt%" /*
 ::rar a -r ..\INST-OIT-"%dt%" *
 lha.exe a ..\inventory-"%dt%".lha  * 
-set time_end=%time:~0,2%:%time:~3,2%
 
-echo.
-echo [0m=====
-echo .
-echo %time_start%
-echo %time_end%
 
 echo [33m================================================================================
 echo [92m========       Transferring INVENTORY files to an FTP server            ========
@@ -36,6 +30,12 @@ curl -i -T ..\inventory-"%dt%".lha -u a0831755 ftp://denkin.ru/domains/denkin.ru
 curl -i -T ..\inventory-"%dt%".lha -u dimon ftp://86.110.167.86/ftp/_inventory/
 echo [0m
 echo.
+set time_end=%time:~0,2%:%time:~3,2%
+echo.
+echo [0m=====
+echo .
+echo %time_start%
+echo %time_end%
 
 ::copy -V -Y "\\10.67.1.36\oit_techbase\list-points\list-points.html" "\\10.67.1.36\oit_techbase\list-points\list-points.html.bak"
 ::copy -V -Y "\\10.67.1.36\oit_techbase\list-points\list-points.xls" "\\10.67.1.36\oit_techbase\list-points\list-points.xls.bak"
