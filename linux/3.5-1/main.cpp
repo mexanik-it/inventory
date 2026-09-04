@@ -75,7 +75,7 @@ int main ( ) {
   if( askYesNo ( "Copy report to local base: " ) )
     inv.write_to_lan ( );
 
-  //inv.delete_file ( );
+  inv.delete_file ( );
 
   return 0;
 }

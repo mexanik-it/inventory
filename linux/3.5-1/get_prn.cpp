@@ -5,11 +5,6 @@
 #include <cstdlib>
 #include <cstring>
 
-#ifdef _WIN32
-    #include <windows.h>
-    #include <vector>
-#endif
-
 // --- trim: убрать пробелы по краям ---
 std::string trim(const std::string& s) {
     size_t first = s.find_first_not_of(" \t\n\r");
@@ -26,55 +21,70 @@ std::string to_lower(std::string s) {
     return s;
 }
 
-// --- Получение имени принтера по умолчанию (кроссплатформенно) ---
+// --- Получение имени принтера по умолчанию (Linux) ---
 std::string get_default_printer() {
-#ifdef _WIN32
-    DWORD size = 0;
-    // Первый вызов: получаем требуемый размер буфера
-    if (!GetDefaultPrinterA(nullptr, &size)) {
-        return "";
-    }
-
-    // size включает завершающий '\0', поэтому выделяем ровно size байт
-    std::vector<char> buffer(size);
-    if (!GetDefaultPrinterA(buffer.data(), &size)) {
-        return "";
-    }
-
-    // Возвращаем строку без завершающего '\0'
-    return std::string(buffer.data(), size - 1);
-#else
-    // Linux: сначала пробуем переменную окружения PRINTER
+    // 1. Переменная окружения PRINTER
     const char* env = std::getenv("PRINTER");
     if (env && *env != '\0') {
         return trim(std::string(env));
     }
 
-    // Fallback: lpstat -d (CUPS)
-    FILE* fp = popen("lpstat -d 2>/dev/null", "r");
-    if (!fp) return "";
-
-    char buf[256] = {};
-    if (!fgets(buf, sizeof(buf), fp)) {
-        pclose(fp);
-        return "";
-    }
-    pclose(fp);
-
-    const char* prefix = "system default destination: ";
-    const char* p = std::strstr(buf, prefix);
-    if (!p) return "";
-
-    p += static_cast<int>(std::strlen(prefix));
-    size_t len = std::strlen(p);
-
-    // Убираем возможные \n и \r в конце
-    while (len > 0 && (p[len - 1] == '\n' || p[len - 1] == '\r')) {
-        --len;
+    // 2. Читаем /etc/cups/lpoptions (пользовательский default)
+    {
+        FILE* fp = std::fopen("/etc/cups/lpoptions", "r");
+        if (fp) {
+            char buf[512] = {};
+            while (std::fgets(buf, sizeof(buf), fp)) {
+                if (std::strncmp(buf, "default", 7) == 0) {
+                    const char* p = buf + 7;
+                    while (*p == ' ' || *p == '\t') ++p;
+                    const char* end = p;
+                    while (*end && *end != ' ' && *end != '\t' &&
+                           *end != '\n' && *end != '\r') ++end;
+                    std::fclose(fp);
+                    std::string name(p, end - p);
+                    if (!name.empty()) return trim(name);
+                }
+            }
+            std::fclose(fp);
+        }
     }
 
-    return trim(std::string(p, len));
-#endif
+    // 3. Читаем /etc/cups/printers.conf (DefaultPrinter или первый Printer)
+    {
+        FILE* fp = std::fopen("/etc/cups/printers.conf", "r");
+        if (fp) {
+            char buf[512] = {};
+            std::string first_printer;
+            while (std::fgets(buf, sizeof(buf), fp)) {
+                // <DefaultPrinter Name> — принтер по умолчанию
+                if (std::strncmp(buf, "<DefaultPrinter", 15) == 0) {
+                    const char* p = buf + 15;
+                    while (*p == ' ' || *p == '\t') ++p;
+                    const char* end = p;
+                    while (*end && *end != '>' && *end != ' ' &&
+                           *end != '\t' && *end != '\n') ++end;
+                    std::fclose(fp);
+                    std::string name(p, end - p);
+                    if (!name.empty()) return trim(name);
+                }
+                // <Printer Name> — обычный принтер, запоминаем первый
+                if (first_printer.empty() &&
+                    std::strncmp(buf, "<Printer", 8) == 0) {
+                    const char* p = buf + 8;
+                    while (*p == ' ' || *p == '\t') ++p;
+                    const char* end = p;
+                    while (*end && *end != '>' && *end != ' ' &&
+                           *end != '\t' && *end != '\n') ++end;
+                    first_printer.assign(p, end - p);
+                }
+            }
+            std::fclose(fp);
+            if (!first_printer.empty()) return trim(first_printer);
+        }
+    }
+
+    return "";
 }
 
 struct PrinterModel {

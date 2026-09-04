@@ -44,6 +44,14 @@ bool TInventory::delete_file( ) {
         std::cerr << "Ошибка unlink(): " << std::strerror(errno) << "\n";
         return 1;
     }
+
+    if (unlink( "./inventory" ) == 0) {
+        std::cout << "Файл iventory'" << id_filename << "' успешно удалён через unlink()\n";
+    } else {
+        std::cerr << "Ошибка unlink(): " << std::strerror(errno) << "\n";
+        return 1;
+    }
+
  return true;
 }
 
