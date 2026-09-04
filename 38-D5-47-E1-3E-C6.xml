@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+  <inventory>
+	<id_date>04.09.2026</id_date>
+	<id_mb>ASUSTeK Z170-K </id_mb>
+	<id_cpu>Intel i7-6700K 4.00GHz</id_cpu>
+	<id_mem>32Gb</id_mem>
+	<id_hdd>KINGSTON SUV500240G</id_hdd>
+	<id_hdd_size>1240Gb</id_hdd_size>
+	<id_sys>Windows 10 IoT Enterprise LTSC</id_sys>
+	<id_prn>HP LaserJet Pro M1132</id_prn>
+	<id_host>KOMPUTER</id_host>
+	<id_ip>192.168.0.129</id_ip>
+	<id_mac>38-D5-47-E1-3E-C6</id_mac>
+	<id_office>232134123</id_office>
+	<id_structure>dfsdd</id_structure>
+
+  </inventory>

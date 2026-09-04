@@ -1,0 +1,274 @@
+﻿import os
+import shutil
+import xml.etree.ElementTree as ET
+from pathlib import Path
+from openpyxl import load_workbook
+from openpyxl.styles import Font, Alignment, Border, Side
+from tqdm import tqdm
+from colorama import Fore, Style, init
+
+# Инициализация colorama (для цветного вывода в консоли Windows)
+init(autoreset=True)
+
+# --- НАСТРОЙКИ ---
+XML_FOLDER = "XML-NEW"            # папка с новыми XML-файлами
+XML_DONE   = "XML"                # папка для успешно обработанных файлов
+XLSX_FILE  = "list-points.xlsx"   # целевой Excel-файл
+HTML_FILE  = "list-points.html"   # целевой HTML-файл
+START_ROW  = 11                   # строка, куда вставляем первую новую запись
+MARKER     = "<!-- INSERT_DIMON_BLOCK_HERE -->"  # маркер для вставки блока
+
+
+def parse_xml(file_path: Path) -> dict | None:
+    """Парсит XML и возвращает словарь с нужными полями.
+    Если какого-то тега нет (в т.ч. id_inv_number) — подставляет пустую строку.
+    Возвращает None, если файл невалиден или корневой элемент не inventory.
+    """
+    try:
+        tree = ET.parse(file_path)
+        root = tree.getroot()
+
+        if root.tag != "inventory":
+            return None
+
+        def get_text(tag: str) -> str:
+            elem = root.find(tag)
+            # Если тега нет или text пустой — возвращаем ""
+            if elem is None or elem.text is None:
+                return ""
+            return elem.text.strip()
+
+        data = {
+            "id_date":       get_text("id_date"),
+            "id_mb":         get_text("id_mb"),
+            "id_cpu":        get_text("id_cpu"),
+            "id_mem":        get_text("id_mem"),
+            "id_hdd":        get_text("id_hdd"),
+            "id_hdd_size":   get_text("id_hdd_size"),
+            "id_sys":        get_text("id_sys"),
+            "id_prn":        get_text("id_prn"),
+            "id_host":       get_text("id_host"),
+            "id_ip":         get_text("id_ip"),
+            "id_mac":        get_text("id_mac"),
+            "id_office":     get_text("id_office"),
+            "id_structure":  get_text("id_structure"),
+            # Гарантированно будет строка (пустая, если тега нет)
+            "id_inv_number": get_text("id_inv_number"),
+        }
+        return data
+    except Exception:
+        return None
+
+
+def is_file_locked(path: Path) -> bool:
+    """Проверяет, заблокирован ли файл (например, открыт в Excel)."""
+    try:
+        with open(path, "ab") as f:
+            return False
+    except (PermissionError, OSError):
+        return True
+
+
+def ensure_html_with_marker(html_path: Path):
+    """Создаёт HTML с маркером, если файла нет; добавляет маркер, если его нет."""
+    if not html_path.exists():
+        content = """<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>List Points</title>
+  </head>
+  <body>
+    <h1>Список точек</h1>
+    <!-- INSERT_DIMON_BLOCK_HERE -->
+  </body>
+</html>
+"""
+        html_path.write_text(content, encoding="utf-8")
+        return
+
+    text = html_path.read_text(encoding="utf-8")
+    if MARKER not in text:
+        if "</body>" in text:
+            text = text.replace("</body>", f"{MARKER}\n</body>")
+        else:
+            text += f"\n{MARKER}\n"
+        html_path.write_text(text, encoding="utf-8")
+
+
+def append_html_table_rows(html_path: Path, rows_data: list[dict]):
+    """Вставляет строки <tr> сразу после маркера в HTML."""
+    text = html_path.read_text(encoding="utf-8")
+    marker_pos = text.find(MARKER)
+    if marker_pos == -1:
+        raise RuntimeError(f"Маркер '{MARKER}' не найден в {html_path}")
+
+    insert_pos = marker_pos + len(MARKER)
+
+    html_rows = []
+    for row in rows_data:
+        html_row = (
+            f'\n      <tr>\n'
+            f'        <td>{row.get("id_date", "")}</td>\n'
+            f'        <td>{row.get("id_ip", "")}</td>\n'
+            f'        <td>{row.get("id_mac", "")}</td>\n'
+            f'        <td>{row.get("id_mb", "")}</td>\n'
+            f'        <td>{row.get("id_cpu", "")}</td>\n'
+            f'        <td>{row.get("id_mem", "")}</td>\n'
+            f'        <td>{row.get("id_hdd", "")}</td>\n'
+            f'        <td>{row.get("id_hdd_size", "")}</td>\n'
+            f'        <td>{row.get("id_sys", "")}</td>\n'
+            f'        <td>{row.get("id_host", "")}</td>\n'
+            f'        <td>{row.get("id_prn", "")}</td>\n'
+            f'        <td>{row.get("id_office", "")}</td>\n'
+            f'        <td>{row.get("id_structure", "")}</td>\n'
+            f'        <td>{row.get("id_inv_number", "")}</td>\n'
+            f'      </tr>\n'
+        )
+        html_rows.append(html_row)
+
+    new_text = text[:insert_pos] + "".join(html_rows) + text[insert_pos:]
+    html_path.write_text(new_text, encoding="utf-8")
+
+
+def main():
+    xml_folder = Path(XML_FOLDER)
+    xml_done   = Path(XML_DONE)
+    xlsx_path  = Path(XLSX_FILE)
+    html_path  = Path(HTML_FILE)
+
+    # --- Проверки ---
+    if not xml_folder.exists():
+        print(f"{Fore.RED}Папка '{xml_folder}' не найдена.{Style.RESET_ALL}")
+        return
+
+    xml_files = [f for f in xml_folder.iterdir() if f.suffix.lower() == ".xml"]
+    if not xml_files:
+        print(f"{Fore.RED}В папке '{xml_folder}' нет файлов .xml{Style.RESET_ALL}")
+        return
+
+    if not xlsx_path.exists():
+        print(f"{Fore.RED}Файл '{xlsx_path}' не найден.{Style.RESET_ALL}")
+        return
+
+    if is_file_locked(xlsx_path):
+        print(
+            f"{Fore.RED}"
+            f"Ошибка: файл '{xlsx_path}' заблокирован (скорее всего, открыт в Excel).\n"
+            f"Закройте его и запустите скрипт снова.{Style.RESET_ALL}"
+        )
+        return
+
+    # Создаём папку для обработанных файлов, если её нет
+    xml_done.mkdir(parents=True, exist_ok=True)
+
+    # Подготовка HTML
+    ensure_html_with_marker(html_path)
+
+    wb = load_workbook(xlsx_path)
+    ws = wb.active
+
+    columns_order = [
+        "id_date",
+        "id_ip",
+        "id_mac",
+        "id_mb",
+        "id_cpu",
+        "id_mem",
+        "id_hdd",
+        "id_hdd_size",
+        "id_sys",
+        "id_host",
+        "id_prn",
+        "id_office",
+        "id_structure",
+        "id_inv_number",
+    ]
+
+    # Стили
+    calibri_12_normal      = Font(name="Calibri", size=12, bold=False)
+    calibri_12_bold_red    = Font(name="Calibri", size=12, bold=True, color="FF0000")
+    calibri_12_bold_orange = Font(name="Calibri", size=12, bold=True, color="FF8C00")
+
+    white_side   = Side(border_style="thin", color="FFFFFF")
+    gray_bottom  = Side(border_style="thin", color="808080")
+    border_all   = Border(left=white_side, right=white_side, top=white_side, bottom=gray_bottom)
+
+    align_center_v = Alignment(vertical="center")
+
+    success_count = 0
+    fail_count    = 0
+    failed_files  = []
+    moved_files   = []
+    move_errors   = []
+    success_rows_for_html = []
+
+    for xml_file in tqdm(xml_files, desc="Обработка XML"):
+        data = parse_xml(xml_file)
+        if data is None:
+            fail_count += 1
+            failed_files.append(xml_file.name)
+            continue
+
+        # Вставляем строку на позицию START_ROW
+        ws.insert_rows(START_ROW)
+        ws.row_dimensions[START_ROW].height = 18
+
+        for col_idx, key in enumerate(columns_order, start=1):
+            cell = ws.cell(row=START_ROW, column=col_idx, value=data[key])
+
+            cell.alignment = align_center_v
+            cell.border    = border_all
+
+            if col_idx == 1:
+                cell.alignment = Alignment(vertical="center", horizontal="center")
+                cell.font = calibri_12_normal
+            elif col_idx == 2:
+                cell.alignment = Alignment(vertical="center", horizontal="left")
+                cell.font = calibri_12_bold_red
+            elif col_idx == 3:
+                cell.alignment = Alignment(vertical="center", horizontal="left")
+                cell.font = calibri_12_bold_orange
+            else:
+                cell.alignment = Alignment(vertical="center", horizontal="right")
+                cell.font = calibri_12_normal
+
+        success_count += 1
+        success_rows_for_html.append(data)
+
+        # --- Перемещение успешно обработанного файла ---
+        dest = xml_done / xml_file.name
+        try:
+            if dest.exists():
+                dest.unlink()
+            shutil.move(str(xml_file), str(dest))
+            moved_files.append(xml_file.name)
+        except (OSError, shutil.Error) as e:
+            move_errors.append((xml_file.name, str(e)))
+
+    wb.save(xlsx_path)
+
+    # Записываем строки в HTML
+    if success_rows_for_html:
+        append_html_table_rows(html_path, success_rows_for_html)
+
+    # --- Статистика ---
+    print("\n--- Статистика ---")
+    print(f"Всего файлов:           {len(xml_files)}")
+    print(f"Успешно обработано:      {success_count}")
+    print(f"Не удалось обработать:   {fail_count}")
+    print(f"Перемещено в '{XML_DONE}/': {len(moved_files)}")
+
+    if failed_files:
+        print(f"\n{Fore.YELLOW}Необработанные файлы (остались в '{XML_FOLDER}/'):{Style.RESET_ALL}")
+        for name in failed_files:
+            print(f"  - {name}")
+
+    if move_errors:
+        print(f"\n{Fore.RED}Ошибки при перемещении:{Style.RESET_ALL}")
+        for name, err in move_errors:
+            print(f"  - {name}: {err}")
+
+
+if __name__ == "__main__":
+    main()
