@@ -1,0 +1,418 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory — Комплекс учёта рабочих мест</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --bg-color: #f8fafc;
+            --text-color: #1f2937;
+            --card-bg: #ffffff;
+            --border-radius: 8px;
+            --gray-200: #e5e7eb;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+
+        /* Шапка */
+        header {
+            background: var(--card-bg);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        nav ul {
+            display: flex;
+            gap: 24px;
+        }
+
+        nav a {
+            cursor: pointer;
+            padding: 6px 4px;
+            border-bottom: 2px solid transparent;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        nav a:hover { color: var(--primary-color); }
+        nav a.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        /* Страницы */
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* Главная */
+        .hero {
+            padding: 4rem 0;
+            text-align: center;
+        }
+        .hero h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+        .hero p {
+            font-size: 1.25rem;
+            color: #6b7280;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 24px;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            transition: background-color 0.2s;
+            cursor: pointer;
+        }
+        .btn:hover { background-color: var(--secondary-color); }
+
+        .features { padding: 3rem 0; }
+
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .lead {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            color: #475569;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .card h3 {
+            margin-bottom: 0.75rem;
+            color: var(--secondary-color);
+        }
+
+        /* Сведения о системе */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 1.25rem;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--gray-200);
+        }
+
+        .stat-label { font-size: 0.875rem; color: #64748b; margin-bottom: 0.25rem; }
+        .stat-value { font-size: 1.1rem; font-weight: 600; }
+        .status-green { color: #10b981; font-weight: 700; }
+
+        .table-wrapper { overflow-x: auto; margin-top: 1rem; margin-bottom: 2rem; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-bg);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--gray-200); }
+        th { background-color: #f1f5f9; color: var(--secondary-color); font-weight: 600; }
+        tr:last-child td { border-bottom: none; }
+
+        .sub-title {
+            font-size: 1.75rem;
+            margin: 2rem 0 1rem;
+            color: var(--secondary-color);
+        }
+
+        .info-list { padding-left: 1.25rem; color: #475569; }
+        .info-list li { margin-bottom: 0.5rem; }
+
+        /* Футер */
+        footer {
+            background: #111;
+            color: #9ca3af;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+        .footer-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .header-inner { flex-direction: column; gap: 1rem; }
+            nav ul { flex-wrap: wrap; justify-content: center; gap: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-inner">
+            <span class="logo" onclick="showPage('home')">Inventory</span>
+            <nav>
+                <ul>
+                    <li><a onclick="showPage('home')" id="nav-home">Главная страница</a></li>
+                    <li><a onclick="showPage('system')" id="nav-system">Сведения о системе</a></li>
+                    <li><a onclick="showPage('registry')" id="nav-registry">Реестр рабочих мест</a></li>
+                    <li><a onclick="showPage('reports')" id="nav-reports">Отчётность и выгрузки</a></li>
+                    <li><a onclick="showPage('help')" id="nav-help">Справочная информация</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <!-- ===== ГЛАВНАЯ ===== -->
+        <section id="page-home" class="page active">
+            <div class="hero">
+                <h1>Руководство пользователя</h1>
+                <p>Порядок эксплуатации комплекса Inventory для автоматизированного учёта материально-технического оснащения рабочих мест на операционных системах Windows и Linux.</p>
+                <span class="btn" onclick="showPage('system')">Перейти к сведениям о системе</span>
+            </div>
+
+            <div class="features">
+                <p class="lead">Программный комплекс предназначен для автоматизированного сбора и учёта сведений о материально‑техническом оснащении рабочего места сотрудника, включая персональные компьютеры, печатающие устройства, средства отображения информации, а также сетевые и аппаратные идентификаторы (IP‑адреса, MAC‑адреса) и инвентарные номера оборудования.</p>
+
+                <h2 class="section-title">Функциональные возможности комплекса</h2>
+                <div class="cards-grid">
+                    <article class="card">
+                        <h3>Централизованный сбор данных</h3>
+                        <p>Автоматизированное получение сведений об оборудовании без использования переносных накопителей (USB‑носителей); передача данных осуществляется по каналам связи сети передачи данных.</p>
+                    </article>
+                    <article class="card">
+                        <h3>Кроссплатформенная поддержка</h3>
+                        <p>Функционирование на операционных системах семейства Windows и Linux, в том числе в условиях применения средств защиты информации (SecretNet и аналогичных решений) и при наличии ограничений на использование USB‑портов.</p>
+                    </article>
+                    <article class="card">
+                        <h3>Минимальные зависимости</h3>
+                        <p>Реализация на легковесном коде без привлечения сторонних библиотек и внешних зависимостей; совместимость с типовыми конфигурациями рабочих станций.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== СВЕДЕНИЯ О СИСТЕМЕ ===== -->
+        <section id="page-system" class="page">
+            <div class="hero">
+                <h1>Сведения о системе</h1>
+                <p>Паспортные и эксплуатационные характеристики программного комплекса Inventory.</p>
+            </div>
+
+            <h2 class="sub-title">Паспортные данные комплекса</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Наименование программного комплекса</div>
+                    <div class="stat-value">Inventory (автоматизированный учёт рабочих мест)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Версия сборки</div>
+                    <div class="stat-value">1.2.0 (сборка 20241015.1)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Дата релиза</div>
+                    <div class="stat-value">15.10.2024</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Статус эксплуатации</div>
+                    <div class="stat-value status-green">В промышленной эксплуатации</div>
+                </div>
+            </div>
+
+            <h2 class="sub-title">Поддерживаемые платформы и требования</h2>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>Параметр</th><th>Значение</th></tr></thead>
+                    <tbody>
+                        <tr><td>Поддерживаемые ОС</td><td>Windows 10/11, Windows Server 2016/2019/2022, CentOS 7/8/9, Ubuntu 20.04/22.04</td></tr>
+                        <tr><td>Минимальные требования (RAM)</td><td>512 МБ свободной оперативной памяти</td></tr>
+                        <tr><td>Дисковое пространство</td><td>Не менее 50 МБ для исполняемых файлов и временных данных</td></tr>
+                        <tr><td>Сетевые требования</td><td>Доступ к внутренней сети предприятия; протокол HTTP/HTTPS для передачи отчётов</td></tr>
+                        <tr><td>Зависимости</td><td>WMI (Windows), udev/sysfs (Linux); сторонние библиотеки не требуются</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h2 class="sub-title">Состав функциональных модулей</h2>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>Модуль</th><th>Назначение</th><th>Статус</th></tr></thead>
+                    <tbody>
+                        <tr><td>Inventory Core</td><td>Ядро комплекса: управление сессиями, логирование, конфигурация</td><td class="status-green">Активен</td></tr>
+                        <tr><td>Hardware Collector (Win)</td><td>Сбор данных об оборудовании через WMI</td><td class="status-green">Активен</td></tr>
+                        <tr><td>Hardware Collector (Linux)</td><td>Сбор данных через sysfs, udev, dmidecode, lsblk</td><td class="status-green">Активен</td></tr>
+                        <tr><td>Network Collector</td><td>Определение сетевых интерфейсов, MAC‑адресов, IP‑адресов</td><td class="status-green">Активен</td></tr>
+                        <tr><td>Reporting Engine</td><td>Формирование отчётов в форматах CSV, JSON, XML</td><td class="status-green">Активен</td></tr>
+                        <tr><td>CLI Interface</td><td>Командная строка для запуска сбора данных и управления</td><td class="status-green">Активен</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h2 class="sub-title">Сведения об ограничениях и совместимости</h2>
+            <p style="margin-bottom:1rem;">Программный комплекс Inventory разработан в соответствии с требованиями к средствам автоматизированного учёта имущества и совместим с типовыми конфигурациями рабочих станций, применяемых в корпоративной среде.</p>
+            <ul class="info-list">
+                <li>Не требуется установка дополнительных драйверов или компонентов ОС.</li>
+                <li>Работа в условиях ограничений на использование USB‑накопителей (без внешних носителей).</li>
+                <li>Совместимость со средствами защиты информации (в т.ч. SecretNet, Dallas Lock и аналогами) при наличии прав локального администратора.</li>
+                <li>Поддержка работы в изолированных сегментах сети (при условии доступности целевых сервисов для формирования отчётов).</li>
+            </ul>
+        </section>
+
+        <!-- ===== РЕЕСТР РАБОЧИХ МЕСТ ===== -->
+        <section id="page-registry" class="page">
+            <div class="hero">
+                <h1>Реестр рабочих мест</h1>
+                <p>Учётные записи автоматизированных рабочих мест сотрудников.</p>
+            </div>
+
+            <h2 class="sub-title">Демонстрационный реестр</h2>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Инв. №</th>
+                            <th>ФИО сотрудника</th>
+                            <th>Подразделение</th>
+                            <th>Модель ПК</th>
+                            <th>IP‑адрес</th>
+                            <th>MAC‑адрес</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>АРМ‑00421</td><td>Иванов И. И.</td><td>Бухгалтерия</td><td>HP EliteDesk 800 G6</td><td>10.0.12.145</td><td>00:1A:2B:3C:4D:5E</td></tr>
+                        <tr><td>АРМ‑00422</td><td>Петрова А. С.</td><td>Отдел кадров</td><td>Lenovo ThinkCentre M70q</td><td>10.0.12.146</td><td>00:1A:2B:3C:4D:5F</td></tr>
+                        <tr><td>АРМ‑00423</td><td>Сидоров П. А.</td><td>ИТ‑отдел</td><td>Dell OptiPlex 7090</td><td>10.0.12.147</td><td>00:1A:2B:3C:4D:60</td></tr>
+                        <tr><td>АРМ‑00424</td><td>Кузнецова М. В.</td><td>Плановый отдел</td><td>HP ProDesk 400 G7</td><td>10.0.12.148</td><td>00:1A:2B:3C:4D:61</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ===== ОТЧЁТНОСТЬ ===== -->
+        <section id="page-reports" class="page">
+            <div class="hero">
+                <h1>Отчётность и выгрузки</h1>
+                <p>Формирование и экспорт отчётов по результатам инвентаризации.</p>
+            </div>
+
+            <h2 class="sub-title">Доступные форматы выгрузки</h2>
+            <div class="cards-grid">
+                <article class="card">
+                    <h3>CSV</h3>
+                    <p>Табличный формат для импорта в электронные таблицы и учетные системы. Кодировка UTF‑8, разделитель — точка с запятой.</p>
+                </article>
+                <article class="card">
+                    <h3>JSON</h3>
+                    <p>Структурированный формат для программной обработки и интеграции с внешними системами через API.</p>
+                </article>
+                <article class="card">
+                    <h3>XML</h3>
+                    <p>Формат с поддержкой схем данных (XSD) для обмена с государственными и корпоративными системами учёта.</p>
+                </article>
+            </div>
+        </section>
+
+        <!-- ===== СПРАВКА ===== -->
+        <section id="page-help" class="page">
+            <div class="hero">
+                <h1>Справочная информация</h1>
+                <p>Краткое руководство по эксплуатации программного комплекса.</p>
+            </div>
+
+            <h2 class="sub-title">Порядок запуска</h2>
+            <ul class="info-list">
+                <li><strong>Windows:</strong> запустить <code>inventory.exe</code> от имени локального администратора.</li>
+                <li><strong>Linux:</strong> выполнить <code>sudo ./inventory</code> в терминале.</li>
+                <li>Дождаться завершения сбора данных (вывод статуса в консоль).</li>
+                <li>Проверить сформированный отчёт в директории <code>./reports/</code>.</li>
+            </ul>
+
+            <h2 class="sub-title">Контакты технической поддержки</h2>
+            <ul class="info-list">
+                <li>Отдел технической поддержки: тел. 8 (484) 000‑00‑00</li>
+                <li>Электронная почта: support@example.ru</li>
+                <li>Режим работы: понедельник–пятница, 9:00–18:00</li>
+            </ul>
+        </section>
+
+    </main>
+
+    <footer>
+        <div class="container footer-inner">
+            <p>&copy; 2024 Inventory. Все права защищены.</p>
+            <p>Демонстрационный макет пользовательского интерфейса (HTML + CSS + JS).</p>
+        </div>
+    </footer>
+
+    <script>
+        function showPage(pageId) {
+            // Скрываем все страницы
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+
+            // Показываем нужную
+            const page = document.getElementById('page-' + pageId);
+            if (page) page.classList.add('active');
+
+            // Снимаем подсветку со всех пунктов меню
+            document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+
+            // Подсвечиваем текущий пункт
+            const navItem = document.getElementById('nav-' + pageId);
+            if (navItem) navItem.classList.add('active');
+
+            // Прокрутка наверх
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>
