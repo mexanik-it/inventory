@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<inventory>
+	<id_date>04.09.2026</id_date>
+	<id_mb>Aquarius AQB365MC</id_mb>
+	<id_cpu>Intel(R) i5-9400 2.90GHz</id_cpu>
+	<id_mem>8Gb</id_mem>
+	<id_hdd>FOXLINE_FLSSD256X5</id_hdd>
+	<id_hdd_size>SSD 260Gb</id_hdd_size>
+	<id_sys>ALT Workstation 9.0</id_sys>
+	<id_prn>HP LaserJet Pro MFP 4103</id_prn>
+	<id_host>1051a2</id_host>
+	<id_ip>10.67.12.77</id_ip>
+	<id_mac>00:58:3F:16:55:32</id_mac>
+	<id_office>ординаторская</id_office>
+	<id_structure>жирургия онкология 3 этаж</id_structure>
+	<id_inv_number>none</id_inv_number>
+</inventory>

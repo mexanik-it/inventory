@@ -65,21 +65,25 @@ int main ( ) {
 
   TInventory inv;
 
+  inv.get_other( );
+  
   if( !inv.scan_id ( ) )
     cout << endl << "Hardware scanning error: " << endl;
 
-
-  inv.get_other( );
-  
   inv.print_id ( );
 
   inv.write_to_file ( );
 
-  if( askYesNo ( "Transfer report to ftp-server...: " ) )
-      inv.write_to_ftp ( );
+  if( inv.write_to_ftp ( ) )
+	okMessage( "Transfer report to ftp-server...: " );
+  else
+	errMessage( "Error transfer to ftp " );
 
-  if( askYesNo ( "Copy report to local base: " ) )
-      inv.write_to_lan ( );
+  if( inv.write_to_lan ( ) )
+	okMessage( "Copy file to lan ..." );
+  else
+	errMessage( "Error copy to lan ..." );
+
 
 //  inv.delete_file ( );
 

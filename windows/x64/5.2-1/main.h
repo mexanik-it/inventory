@@ -78,6 +78,10 @@ std::vector<DiskInfo> getDisks();
 std::vector<LanInfo> get_mac_addresses();
 
 
+
+    void okMessage(const std::string& msg);
+    void errMessage(const std::string& msg);
+
 // --- Класс TInventory ---
 
 class TInventory
@@ -130,7 +134,5 @@ public:
     bool print_id(void);
 
 private:
-    void errMessage(std::string);
-    void warMessage(std::string);
     void showMessage(std::string, std::string = "");
 };

@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+  <inventory>
+	<id_date>31.08.2026</id_date>
+	<id_mb>Gigabyte H410M K</id_mb>
+	<id_cpu>Intel i3-10100 3.60GHz</id_cpu>
+	<id_mem>16Gb</id_mem>
+	<id_hdd>unknown</id_hdd>
+	<id_hdd_size>unknown</id_hdd_size>
+	<id_sys>Windows 10 Pro</id_sys>
+	<id_prn>HP LaserJet Professional M1214nfh MFP</id_prn>
+	<id_host>WS-040-024</id_host>
+	<id_ip>10.67.40.24</id_ip>
+	<id_mac>10-FF-E0-28-EC-18</id_mac>
+	<id_office>9 заведующая</id_office>
+	<id_structure>туберкулёз</id_structure>
+  </inventory>

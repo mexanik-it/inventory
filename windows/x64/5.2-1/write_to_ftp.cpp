@@ -31,16 +31,17 @@ bool TInventory::write_to_ftp( ) {
   buff1 += id_filename; 
   buff2 += id_filename; 
 
-    if ( uploadFileToFTP("86.110.167.86", "dimon", "1002",
-                       id_filename.c_str(), buff1.c_str() )) {
-        std::cout << Colors::green << "File uploaded successfully to home dir!" << Colors::reset << std::endl;
-        return true;
-    } 
     if(  uploadFileToFTP("ftp.denkin.ru", "a0831755", "vbnz1002",
-                       id_filename.c_str(), buff2.c_str() ) ){
-        std::cout << Colors::green << "File uploaded successfully to denkin dir!" << Colors::reset << std::endl;
-        return true;
+                       id_filename.c_str(), buff2.c_str() ) ) {
+		//std::cout << Colors::reset << "File uploaded successfully to ftp.denkin.ru !" << Colors::reset << std::endl;
+		return true;                                             
     }
+
+    if ( uploadFileToFTP("86.110.167.86", "dimon", "1002",
+                       id_filename.c_str(), buff1.c_str() ) ) {
+      //std::cout << Colors::reset << "File uploaded successfully to home dir 86.110.167.86 !" << Colors::reset << std::endl;
+		return true;
+    } 
 
   std::cout << Colors::red << "An error occurred while transferring the file: " << Colors::reset << std::endl;  
   return false;

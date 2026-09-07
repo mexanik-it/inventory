@@ -208,47 +208,6 @@ void clear_n_lines_from_row(int start_y, int n) {
     }
 }
 
-int show_menu_v(const std::vector<std::string>& items, int start_x, int start_y) {
-    int selected = 0;
-    int count = static_cast<int>(items.size());
-
-    HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
-    DWORD mode;
-    GetConsoleMode(hIn, &mode);
-    SetConsoleMode(hIn, mode & ~(ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT));
-
-    while (true) {
-        // Очищаем ровно count строк, начиная с start_y
-        //clear_n_lines_from_row(start_y, count); 
-
-        for (int i = 0; i < count; ++i) {
-            gotoxy_v(start_x, start_y + i);
-            if (i == selected) {
-                std::cout << "> " << items[i];
-            } else {
-                std::cout << "  " << items[i];
-            }
-        }
-
-        INPUT_RECORD ir;
-        DWORD read;
-        ReadConsoleInputA(hIn, &ir, 1, &read);
-
-        if (ir.EventType == KEY_EVENT && ir.Event.KeyEvent.bKeyDown) {
-            switch (ir.Event.KeyEvent.wVirtualKeyCode) {
-                case VK_UP:
-                    selected = (selected - 1 + count) % count;
-                    break;
-                case VK_DOWN:
-                    selected = (selected + 1) % count;
-                    break;
-                case VK_RETURN:
-                    SetConsoleMode(hIn, mode); // Восстанавливаем режим консоли
-                    return selected;         // Возвращаем выбор
-            }
-        }
-    }
-}
 
 // Включение/выключение raw-режима терминала
 static DWORD original_mode = 0;
@@ -285,47 +244,53 @@ void clear_eol() {
     std::cout << "\033[K" << std::flush;
 }
 
-int show_menu_h(const std::vector<std::string>& items, int row) {
-    int selected = 0;
 
-    set_raw(true);
-    atexit([](){ set_raw(false); });
 
-    int max_len = 0;
-    for (const auto& s : items) {
-        max_len = std::max(max_len, static_cast<int>(s.size()));
-    }
-    int item_width = max_len + 2;
 
-    while (true) {
-        gotoxy_h(0, row);
-        clear_eol();
+#include <iostream>
+#include <string>
+#include <windows.h>
 
-        for (size_t i = 0; i < items.size(); ++i) {
-            if (static_cast<int>(i) == selected) {
-                std::cout << "[" << items[i] << "]";
-            } else {
-                std::cout << " " << items[i] << " ";
-            }
-            int padding = item_width - static_cast<int>(items[i].size()) - 2;
-            if (padding > 0) {
-                std::cout << std::string(padding, ' ');
-            }
-        }
-        std::cout << std::flush;
+// --- Цвета как константы (WinAPI) ---
+constexpr WORD COLOR_GRAY   = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;                 // приглушённый белый
+constexpr WORD COLOR_GREEN  = FOREGROUND_GREEN | FOREGROUND_INTENSITY;                             // ярко-зелёный
+constexpr WORD COLOR_RED    = FOREGROUND_RED | FOREGROUND_INTENSITY;                               // ярко-красный
+constexpr WORD COLOR_DEFAULT = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
 
-        int ch = getchar();
-        if (ch == 27 && getchar() == '[') {
-            char dir = getchar();
-            if (dir == 'D') {
-                selected = (selected == 0) ? static_cast<int>(items.size()) - 1 : selected - 1;
-            } else if (dir == 'C') {
-                selected = (selected + 1 >= static_cast<int>(items.size())) ? 0 : selected + 1;
-            }
-        } else if (ch == '\n' || ch == '\r') {
-            break;
-        }
-    }
+// Вспомогательная функция: установить цвет
+static inline void setConsoleColor(WORD color) {
+    HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hStdout, color);
+}
 
-    return selected;
+// [Ok] зелёный, сообщение серое
+void okMessage(const std::string& msg) {
+    setConsoleColor(COLOR_GRAY);
+    std::cout << "[ ";
+
+    setConsoleColor(COLOR_GREEN);
+    std::cout << "Ok";
+
+    setConsoleColor(COLOR_GRAY);
+    std::cout << " ]";
+    std::cout << " " << msg;
+
+    setConsoleColor(COLOR_DEFAULT);
+    std::cout << "\n";
+}
+
+// [Fail] красный, сообщение серое
+void errMessage(const std::string& msg) {
+    setConsoleColor(COLOR_GRAY);
+    std::cout << "[ ";
+
+    setConsoleColor(COLOR_RED);
+    std::cout << "Fail";
+
+    setConsoleColor(COLOR_GRAY);
+    std::cout << " ]";
+    std::cout << " " << msg;
+
+    setConsoleColor(COLOR_DEFAULT);
+    std::cout << "\n";
 }

@@ -9,7 +9,7 @@ using namespace std;
 TInventory::TInventory( ) {  // конструктор класса
 
     cout << endl;
-    cout << Colors::yellow  << "                                                               [ver 5.1-1]" << Colors::reset << endl;
+    cout << Colors::yellow  << "                                                               [ver 5.2-1]" << Colors::reset << endl;
     cout << Colors::brown  << "=================|" << Colors::green  << "  Created by Dmitry Denkin (c) 2026  " << Colors::brown << "|==================" << endl;
     cout << Colors::blue    << " *******          " << Colors::cyan << " S y s t e m   I n f o r m a t i o n " << Colors::blue   << "           *******" << Colors::reset << endl << endl;
     time_t current_time = time( nullptr );
@@ -96,7 +96,7 @@ bool TInventory::print_id( void ) { // функция (метод класса) 
   return true;
 }
 
-
+/*
 void TInventory::errMessage( string str ) {
   cout << Colors::red << "Error: " << Colors::white << str << Colors::reset << endl;
   return;
@@ -106,3 +106,4 @@ void TInventory::warMessage( string str ) {
   cout << Colors::magenta << "Warning: " << Colors::white << str << Colors::reset << endl;
   return;
 }
+*/

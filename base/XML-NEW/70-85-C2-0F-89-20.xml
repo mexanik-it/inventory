@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+  <inventory>
+	<id_date>01.09.2026</id_date>
+	<id_mb>ASRock H81M-VG4 R3.0</id_mb>
+	<id_cpu>Intel i3-4160 3.60GHz</id_cpu>
+	<id_mem>4Gb</id_mem>
+	<id_hdd>unknown</id_hdd>
+	<id_hdd_size>unknown</id_hdd_size>
+	<id_sys>Windows 10 Pro</id_sys>
+	<id_prn>HP LaserJet MFP M129-M134 PCLmS</id_prn>
+	<id_host>WS-040-022</id_host>
+	<id_ip>10.67.40.22</id_ip>
+	<id_mac>70-85-C2-0F-89-20</id_mac>
+	<id_office>заведующая</id_office>
+	<id_structure>туберкулёз</id_structure>
+  </inventory>

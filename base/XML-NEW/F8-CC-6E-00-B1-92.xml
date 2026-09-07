@@ -1,0 +1,17 @@
+<?xml version='3.5-1' encoding='UTF-8'?>
+<inventory>
+	<id_date>04.09.2026</id_date>
+	<id_mb>DEPO Computers DPH110S</id_mb>
+	<id_cpu>Intel(R) i3-9100 3.60GHz</id_cpu>
+	<id_mem>8Gb</id_mem>
+	<id_hdd>QUMO_SSD</id_hdd>
+	<id_hdd_size>SSD 240Gb</id_hdd_size>
+	<id_sys>ALT 8 SP Workstation (cliff)</id_sys>
+	<id_prn>HP LaserJet Pro M428fdw</id_prn>
+	<id_host>002096</id_host>
+	<id_ip>10.67.28.74</id_ip>
+	<id_mac>F8:CC:6E:00:B1:92</id_mac>
+	<id_office>регистратура 4 окно</id_office>
+	<id_structure>pol1</id_structure>
+	<id_inv_number>88520</id_inv_number>
+</inventory>
