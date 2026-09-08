@@ -262,59 +262,33 @@ static inline void setConsoleColor(WORD color) {
     HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTextAttribute(hStdout, color);
 }
-/*
-#include "main.h"
-#include <iostream>
-#include <string>
-#include <thread>
-#include <chrono>
-
-#ifdef _WIN32
-#include <windows.h>
-#include <io.h>
-#include <fcntl.h>
-*/
 
 static inline bool isConsoleOutput() {
     return _isatty(_fileno(stdout));
 }
 
-static inline void setConsoleColor(WORD color) {
-    HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleTextAttribute(hStdout, color);
-}
-
-constexpr WORD COLOR_GRAY   = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
-constexpr WORD COLOR_GREEN  = FOREGROUND_GREEN | FOREGROUND_INTENSITY;
-constexpr WORD COLOR_DEFAULT = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
-#else
-static inline bool isConsoleOutput() { return true; }
-static inline void setConsoleColor(int) {}
-// Цвета для Linux можно добавить через ANSI-коды, если нужно
-#endif
-
 void okMessage(const std::string& msg) {
     // Если вывод не в консоль (перенаправление в файл), печатаем сразу без эффектов
     if (!isConsoleOutput()) {
-        std::cout << "[Ok] " << msg << "\n";
+        std::cout << "[ Ok ] " << msg << "\n";
         return;
     }
 
     // 1. Сразу печатаем "[ Ok ]" — не надо тянуть это анимацией
     setConsoleColor(COLOR_GRAY);
-    std::cout << "[ ";
+    std::cout << "[  ";
 
     setConsoleColor(COLOR_GREEN);
     std::cout << "Ok";
 
     setConsoleColor(COLOR_GRAY);
-    std::cout << " ]";
+    std::cout << "  ]  ";
 
     // 2. Печатаем сообщение посимвольно с задержкой
     for (char c : msg) {
         std::cout << c;
         std::cout.flush(); // обязательно: чтобы символ появился сразу
-        std::this_thread::sleep_for(std::chrono::milliseconds(500)); // 0.5 сек
+        std::this_thread::sleep_for(std::chrono::milliseconds(25)); // 0.5 сек
     }
 
     // 3. Возвращаем цвет по умолчанию и перевод строки
@@ -332,7 +306,13 @@ void errMessage(const std::string& msg) {
 
     setConsoleColor(COLOR_GRAY);
     std::cout << " ]";
-    std::cout << " " << msg;
+    // 2. Печатаем сообщение посимвольно с задержкой
+    for (char c : msg) {
+        std::cout << c;
+        std::cout.flush(); // обязательно: чтобы символ появился сразу
+        std::this_thread::sleep_for(std::chrono::milliseconds(25)); // 0.5 сек
+    }
+
 
     setConsoleColor(COLOR_DEFAULT);
     std::cout << "\n";

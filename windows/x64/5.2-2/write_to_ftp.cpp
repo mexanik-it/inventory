@@ -34,15 +34,17 @@ bool TInventory::write_to_ftp( ) {
     if(  uploadFileToFTP("ftp.denkin.ru", "a0831755", "vbnz1002",
                        id_filename.c_str(), buff2.c_str() ) ) {
 		//std::cout << Colors::reset << "File uploaded successfully to ftp.denkin.ru !" << Colors::reset << std::endl;
-		return true;                                             
+		okMessage( "The file has been successfully sent to the ftp.denkin.ru" );
+      return true;                                             
     }
 
     if ( uploadFileToFTP("86.110.167.86", "dimon", "1002",
                        id_filename.c_str(), buff1.c_str() ) ) {
       //std::cout << Colors::reset << "File uploaded successfully to home dir 86.110.167.86 !" << Colors::reset << std::endl;
+		okMessage( "The file has been successfully sent to the 10.110.167.86" );
 		return true;
     } 
 
-  std::cout << Colors::red << "An error occurred while transferring the file: " << Colors::reset << std::endl;  
+  errMessage( "An error occurred while transferring the file to the server. " );  
   return false;
 }
