@@ -1,0 +1,33 @@
+#include "main.h"
+#include <cmath>
+#include <iostream>
+#include <windows.h>
+
+/***************************************************************************************************/
+/* возвращает общее количество оперативной памяти в Gb                                             */
+/***************************************************************************************************/
+
+bool TInventory::get_mem( ) {
+ 
+    MEMORYSTATUSEX memoryInfo;
+    memoryInfo.dwLength = sizeof(MEMORYSTATUSEX);
+
+    if (GlobalMemoryStatusEx(&memoryInfo)) {
+        // Общий объём физической памяти в байтах
+        unsigned long long totalMemoryBytes = memoryInfo.ullTotalPhys;
+
+        // Переводим в гигабайты (1 ГБ = 1 073 741 824 байт)
+        double totalMemoryGB = static_cast<double>(totalMemoryBytes) / 1073741824.0;
+        int intGB = static_cast<int>(std::round(totalMemoryGB));
+        id_mem = to_string( intGB );
+        id_mem += " Gb";
+//        std::cout << "Total memory: " << intGB << " Gb" << endl;
+//                  << totalMemoryBytes << " байт\n"
+//                  << "(" << totalMemoryGB << " Gb)\n";
+    } else {
+        cerr << "Error getting information about memory..." << endl;
+        return false;
+    }
+
+ return true;
+}
