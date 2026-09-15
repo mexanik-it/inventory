@@ -39,7 +39,7 @@ confirm() {
 # Передача файла для Linux
 confirm ""
 echo -e "${CYAN}Starting process ..${ORANGE}"
-if curl -T linux/3.5-1/inventory "ftp://a0831755:vbnz1002@ftp.denkin.ru/domains/denkin.ru/public_html/tmp/"; then
+if curl -T linux/3.5-2/inventory "ftp://a0831755:vbnz1002@ftp.denkin.ru/domains/denkin.ru/public_html/tmp/"; then
     echo -e "${GREEN}[Linux] - File transfer completed successfully...${RESET}"
 else
     echo -e "${RED}[Linux] - An error occurred while transferring the file...${RESET}"

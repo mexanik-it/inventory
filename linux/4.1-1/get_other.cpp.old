@@ -1,0 +1,27 @@
+#include "main.h"
+
+/***************************************************************************************************/
+/* присваивает номер кабинета и здание в котом находится этот кабинет                              */
+/***************************************************************************************************/
+
+#include <unistd.h>
+#include <iostream>
+#include <string>
+
+bool TInventory::get_other() {
+    std::string id_office, id_structure;
+
+    const char* blue_bold = isatty(STDOUT_FILENO) ? "\033[34;1m" : "";
+    //const char* yellow_bold = isatty(STDOUT_FILENO) ? "\033[33;1m" : "";
+    //const char* brownish = isatty(STDOUT_FILENO) ? "\033[33;1m" : "";
+    //const char* red_bold = isatty(STDOUT_FILENO) ? "\033[31;1m" : "";
+    const char* reset_str = isatty(STDOUT_FILENO) ? "\033[0m"    : "";  // другое имя, чтобы не конфликтовать
+
+    std::cout << blue_bold << "Введите кабинет: " << reset_str << std::flush;
+    if (!std::getline(std::cin, id_office)) return false;
+
+    std::cout << blue_bold << "Введите здание: " << reset_str << std::flush;
+    if (!std::getline(std::cin, id_structure)) return false;
+
+    return true;
+}

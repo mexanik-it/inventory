@@ -1,0 +1,175 @@
+Разберу настройку синхронизации времени в CentOS — отдельно для версий 7+ (с chrony) и 6- (с ntpd).
+
+Для CentOS 7 и новее (используется chrony)
+Шаг 1. Проверьте статус сервиса chrony:
+
+bash
+systemctl status chronyd
+Если сервис не найден, установите и запустите его:
+
+bash
+sudo dnf install chrony
+sudo systemctl enable chronyd
+sudo systemctl start chronyd
+Шаг 2. Настройте NTP‑серверы. Откройте файл конфигурации:
+
+bash
+sudo mcedit /etc/chrony.conf
+Добавьте строки с NTP‑серверами — например:
+
+server 0.centos.pool.ntp.org iburst
+server 1.centos.pool.ntp.org iburst
+server 2.centos.pool.ntp.org iburst
+server 3.centos.pool.ntp.org iburst
+Параметр iburst ускоряет начальную синхронизацию.
+
+Шаг 3. Перезапустите сервис:
+
+bash
+sudo systemctl restart chronyd
+Шаг 4. Проверьте источники синхронизации:
+
+bash
+chronyc sources
+В выводе должны появиться указанные серверы.
+
+Шаг 5. Проверьте текущее состояние синхронизации:
+
+bash
+chronyc tracking
+Убедитесь, что время синхронизировано корректно.
+
+Для CentOS 6 и старше (используется ntpd)
+Шаг 1. Установите и запустите ntpd:
+
+bash
+sudo yum install ntp
+sudo systemctl enable ntpd
+sudo systemctl start ntpd
+Шаг 2. Настройте NTP‑серверы. Отредактируйте файл /etc/ntp.conf:
+
+bash
+sudo vi /etc/ntp.conf
+Добавьте или измените строки server, например:
+
+server 0.centos.pool.ntp.org
+server 1.centos.pool.ntp.org
+server 2.centos.pool.ntp.org
+Шаг 3. Разрешите NTP в firewall. Если используется firewalld, выполните:
+
+bash
+sudo firewall-cmd --permanent --add-service=ntp
+sudo firewall-cmd --reload
+Для iptables добавьте правило:
+
+bash
+sudo iptables -A INPUT -p udp --dport 123 -j ACCEPT
+Шаг 4. Перезапустите ntpd:
+
+bash
+sudo systemctl restart ntpd
+Шаг 5. Проверьте синхронизацию:
+
+bash
+ntpq -p
+В столбце reach должны быть значения 377 (успешные попытки).
+
+Шаг 6. Принудительная синхронизация (если нужно сразу):
+
+bash
+sudo ntpdate -u 0.centos.pool.ntp.org
+Полезные команды для проверки
+Текущее системное время:
+
+bash
+date
+Время BIOS:
+
+bash
+sudo hwclock
+Текущая временная зона и статус NTP:
+
+bash
+timedatectl
+Установить временную зону (например, Москва):
+
+bash
+sudo timedatectl set-timezone Europe/Moscow
+Сохранить время в BIOS после синхронизации:
+
+bash
+sudo hwclock --systohc
+Рекомендации
+Используйте пул NTP‑серверов (например, *.centos.pool.ntp.org) для надёжности.
+
+В корпоративной сети настройте локальный NTP‑сервер, чтобы снизить нагрузку на внешние источники.
+
+Проверьте открытие UDP‑порта 123 в firewall — он нужен для NTP.
+
+Для автоматической коррекции оставьте сервис (chronyd или ntpd) запущенным — он будет поддерживать точность времени.
+
+Если хотите, могу подробнее раскрыть какой‑то из этапов или помочь с нестандартной конфигурацией!
+
+Я
+centos 9 синхронизация времени для vsftp сервера
+Алиса
+Синхронизация времени на CentOS 9 важна для корректной работы любых сервисов, включая FTP-сервер vsftpd. Это обеспечивает согласованность логов, корректную обработку временных меток файлов и совместимость с другими системами. В CentOS 9 по умолчанию используется служба chronyd (пакет chrony) для синхронизации времени по протоколу NTP. 
+reintech.io +1
+
+Установка и настройка chrony
+Проверьте наличие и статус службы:
+
+bash
+sudo systemctl status chronyd
+Если служба не установлена, установите её:
+
+bash
+sudo dnf install chrony
+Включите и запустите службу:
+
+bash
+sudo systemctl enable --now chronyd
+Настройте источники времени (NTP-серверы). Откройте файл конфигурации:
+
+bash
+sudo vi /etc/chrony.conf
+По умолчанию в CentOS 9 уже используются серверы из пула centos.pool.ntp.org. Можно добавить или изменить строки с серверами, например:
+
+text
+server 0.centos.pool.ntp.org iburst
+server 1.centos.pool.ntp.org iburst
+server 2.centos.pool.ntp.org iburst
+server 3.centos.pool.ntp.org iburst
+Параметр iburst ускоряет начальную синхронизацию. 
+
+Перезапустите службу после изменений:
+
+bash
+sudo systemctl restart chronyd
+Проверка синхронизации
+Проверьте источники синхронизации:
+
+bash
+chronyc sources
+В выводе должны появиться указанные серверы. Символ * обозначает текущий активный источник, + — приемлемые источники, - — мониторируемые, но не используемые, ? — недоступные источники. 
+
+Проверьте текущее состояние синхронизации:
+
+bash
+chronyc tracking
+Ищите строку Leap status : Normal, которая подтверждает корректную работу. Также можно проверить смещение системного времени, частоту и другие параметры. 
+reintech.io +1
+
+Проверьте общие настройки времени:
+
+bash
+timedatectl
+Убедитесь, что в выводе указано System clock synchronized: yes и правильный часовой пояс. 
+
+Настройка часового пояса
+Если необходимо изменить часовой пояс, используйте timedatectl:
+
+bash
+sudo timedatectl set-timezone Europe/Moscow
+Список доступных часовых поясов можно посмотреть командой timedatectl list-timezones. 
+reintech.io +1

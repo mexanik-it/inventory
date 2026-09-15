@@ -1,0 +1,61 @@
+#include "main.h"
+
+/***************************************************************************************************/
+/* присваивает переменной id_cpu  название процессора и тактовую частоту                           */
+/***************************************************************************************************/
+ 
+bool TInventory::get_cpu( )
+{
+ FILE *hand;
+ char     outstr[FILENAME_MAX], *tmp;
+
+ outstr[FILENAME_MAX-1]=0;
+ hand=popen("cat /proc/cpuinfo | grep name","r");
+
+ if(hand==NULL) {
+   perror("Can`t open shell process:");
+   return false;
+   }
+
+ fgets(outstr,FILENAME_MAX-1,hand);
+
+ tmp=strchr(outstr,':');
+ if ( tmp == NULL ) {
+   cout << "Damn, format /proc/cpuinfo unrecognized" << endl;
+   pclose( hand );
+   return false;
+   }
+
+ tmp++;
+
+ if ( tmp == NULL ) {
+   cout << "Damn, format /proc/cpuinfo unrecognized" << endl;
+   pclose( hand );
+   return false;
+   }
+
+ tmp++;
+
+ if( tmp == NULL ) {
+   cout << "Damn, format /proc/cpuinfo unrecognized" << endl;
+   pclose( hand );
+   return false;
+   }
+
+
+ //puts(tmp);
+
+ pclose(hand);
+
+ replace( tmp, '\n', ' ');
+ id_cpu = tmp;
+
+    // вырезаем все ненужное
+    string toRemove = " Dual Core Processor";
+    size_t pos = id_cpu.find(toRemove);
+    if (pos != std::string::npos) {
+        id_cpu.erase(pos);
+    }
+
+ return  true;
+}
