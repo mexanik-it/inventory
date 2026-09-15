@@ -56,6 +56,22 @@ class TInventory // имя класса
 public: // спецификатор доступа public
 
   char buffer[80];
+  
+  TInventory( ); // конструктор класса
+
+//private: // спецификатор доступа private
+
+
+  bool write_to_file( );
+  bool delete_file( );
+  bool write_to_ftp( );
+  bool write_to_lan( );
+  void err_message( string str); // функция (метод класса) выводящая сообщение об ошибке на экран
+  bool scan_id(  void );
+  bool print_id( void ); // функция (метод класса) выводящая данные на экран
+  bool get_other    ( );
+
+private:
   string id_date       = "unknown",
          id_mb         = "unknown",
          id_cpu        = "unknown",
@@ -73,34 +89,19 @@ public: // спецификатор доступа public
          id_inv_number = "unknown";     /*  инвентарный номер    */
 
   string sn_mb         = "unknown";
-  
-  TInventory( ); // конструктор класса
 
-//private: // спецификатор доступа private
-
-  bool get_mb    ( );
-  bool get_mb_sn ( );
-  bool get_cpu   ( );
-  bool get_mem   ( );
-  bool get_ip  ( );
-  bool get_mac ( );
-  bool get_hdd ( );
-  bool get_host( );
-  bool get_sys ( );
-  bool get_prn ( );
-  bool get_other ( );
-  bool get_hdd_size( );
-  bool get_filename( );
-
-  bool write_to_file( );
-  bool delete_file( );
-  bool write_to_ftp( );
-  bool write_to_lan( );
-  void err_message( string str); // функция (метод класса) выводящая сообщение об ошибке на экран
-  bool scan_id(  void );
-  bool print_id( void ); // функция (метод класса) выводящая данные на экран
-
-private:
 //  bool  get_mac_via_ioctl(const char* interface);
+  bool get_mb       ( );
+  bool get_mb_sn    ( );
+  bool get_cpu      ( );
+  bool get_mem      ( );
+  bool get_ip       ( );
+  bool get_mac      ( );
+  bool get_hdd      ( );
+  bool get_host     ( );
+  bool get_sys      ( );
+  bool get_prn      ( );
+  bool get_hdd_size ( );
+  bool get_filename ( );
 
 }; // конец объявления класса TInventory

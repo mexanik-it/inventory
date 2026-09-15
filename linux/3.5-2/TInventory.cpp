@@ -38,34 +38,28 @@ TInventory::TInventory( ) {  // конструктор класса
     id_date = buffer;
 }
 
-bool TInventory::delete_file( ) {
-/*
-    == тоже работает ==
-    if (std::remove( id_filename.c_str() ) == 0) {
-        std::cout << "Файл '" << id_filename << "' успешно удалён\n";
+bool TInventory::delete_file() {
+    // Удаление основного файла
+    if (unlink(id_filename.c_str()) == 0) {
+        // Безопасная конкатенация строки
+        std::string msg = "Файл " + id_filename + " успешно удалён через unlink()\n";
+        okMessage(msg.c_str());
     } else {
-        std::perror("Ошибка при удалении файла");
+        std::string msg = "Ошибка удаления unlink(): " + std::string(std::strerror(errno)) + "\n";
+        errMessage(msg.c_str());
         return false;
     }
-*/
 
-    if (unlink( (char*)id_filename.c_str() ) == 0) {
-        okMessage( "Файл " +  id_filename + " успешно удалён через unlink()\n" );
-        std::cout << "Файл '" << id_filename << "' успешно удалён через unlink()\n";
-    } else {
-        errMessage( "Ошибка удаления unlink(): " << std::strerror(errno) << "\n";
-        return 1;
+    // Удаление ./inventory
+    if (unlink("./inventory") != 0) {
+        std::string msg = "Ошибка удаления ./inventory: " + std::string(std::strerror(errno)) + "\n";
+        errMessage(msg.c_str());
+        return false;
     }
 
-    if (unlink( "./inventory" ) == 0) {
-        okMessage( "Файл inventory успешно удалён через unlink()\n" );
-    } else {
-        std::cerr << "Ошибка unlink(): " << std::strerror(errno) << "\n";
-        return 1;
-    }
-
- return true;
+    return true;
 }
+
 
 bool TInventory::scan_id ( void ) { // функция (метод класса) сканирует устройства (комплектуху)
   if( !get_mb() )
