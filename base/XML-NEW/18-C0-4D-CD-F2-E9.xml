@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- inventory v5.2-1 -->
+  <inventory>
+	<id_date>16.09.2026</id_date>
+	<id_mb>Gigabyte H410M H V3</id_mb>
+	<id_cpu>Intel Core i3-10105 CPU 3.70GHz</id_cpu>
+	<id_mem>16Gb</id_mem>
+	<id_hdd>Samsung SSD 870 EVO 500GB</id_hdd>
+	<id_hdd_size>SSD-500Gb</id_hdd_size>
+	<id_sys>Windows 10 Pro</id_sys>
+	<id_prn>HP LaserJet Pro M428fdw</id_prn>
+	<id_host>WS-014-161</id_host>
+	<id_ip>10.67.14.161</id_ip>
+	<id_mac>18-C0-4D-CD-F2-E9</id_mac>
+	<id_office>510</id_office>
+	<id_structure>pol1</id_structure>
+	<id_inv_number>none</id_inv_number>
+  </inventory>
