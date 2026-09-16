@@ -43,10 +43,10 @@ bool TInventory::write_to_lan() {
     int ret = std::system(cmd.c_str());
 
     if (ret == 0) {
-        okMessage("  Файл загружен через smbclient."); // Лучше использовать okMessage
+        okMessage("Файл загружен через smbclient."); // Лучше использовать okMessage
         //std::cout << "[INFO] Файл загружен через smbclient.\n";
     } else {
-        errMessage("  SMBclient вернул код " + std::to_string(ret));
+        errMessage("SMBclient вернул код " + std::to_string(ret));
         return false; // Возвращай bool, раз функция объявлена как bool
     }
     return true;
