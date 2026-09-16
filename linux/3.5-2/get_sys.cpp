@@ -66,6 +66,11 @@ bool TInventory::get_sys( ) {
         id_sys.erase(pos, toRemove.length());
     }
 
+    toRemove = " (cliff)";
+    pos = id_sys.find(toRemove);
+    if (pos != std::string::npos) {
+        id_sys.erase(pos, toRemove.length());
+    }
 
   return true;
 }
