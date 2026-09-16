@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Инвентаризация</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card-bg: #ffffff;
+      --border: #e0e6ed;
+      --text: #333;
+      --header: #2c3e50;
+      --accent: #3498db;
+    }
+
+    body {
+      margin: 0;
+      padding: 16px;
+      font-family: "Calibri", "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    h1 {
+      margin-top: 0;
+      margin-bottom: 8px;
+      color: var(--header);
+      font-weight: 600;
+    }
+
+    .stats-panel {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+      background: var(--card-bg);
+      padding: 12px 16px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      border: 1px solid var(--border);
+    }
+
+    .stat-item {
+/*      font-size: 0.95rem;          */
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stat-value {
+      font-weight: bold;
+      color: var(--accent); 
+    }
+
+    /* Цвета для ОС */
+    .windows { color: #0078d7; }
+    .linux   { color: #159957; }
+
+    /* Цвета для накопителей */
+    .hdd     { color: #d35400; }
+    .ssd     { color: #8e44ad; }
+
+    /* Цвета для процессоров */
+    .cpu-i3  { color: #2980b9; }   /* синий */
+    .cpu-i5  { color: #27ae60; }   /* зелёный */
+    .cpu-i7  { color: #9b59b6; }   /* фиолетовый */
+    .cpu-i9  { color: #e74c3c; }   /* красный */
+    .cpu-amd { color: #e67e22; }   /* оранжевый */
+
+.table-container {
+  height: 84vh;
+  overflow: auto;
+  border: 1px solid #ccc;
+  border-radius: 7px;
+}
+
+table {
+  border-collapse: collapse;
+  width: auto;
+  min-width: 2535px; /* Сумма ширин всех колонок + отступы */
+  table-layout: auto;
+  font-size: 0.9em;
+}
+
+/* Чтобы браузеры точно соблюдали ваши пиксели, лучше задать их через CSS */
+thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #A0CFEC;
+  text-align: center;
+  color: #003366;
+  padding: 10px 12px;
+  
+  /* Явно прописываем ширины тут, убрав их из HTML */
+/*  &:nth-child(1) { width: 50px; }
+  &:nth-child(2) { width: 50px; }
+  &:nth-child(3) { width: 70px; }
+  &:nth-child(4) { width: 220px; }
+  &:nth-child(5) { width: 350px; }
+  &:nth-child(6) { width: 35px; }
+  &:nth-child(7) { width: 200px; }
+  &:nth-child(8) { width: 150px; }
+  &:nth-child(9) { width: 250px; }
+  &:nth-child(10) { width: 100px; }
+  &:nth-child(11) { width: 300px; }
+  &:nth-child(12) { width: 100px; }
+  &:nth-child(13) { width: 100px; }*/
+}    td {
+      padding: 10px 12px;
+      text-align: left;
+      border: none;
+    }
+    tbody td {
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #A0CFEC;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.12);
+      text-align: center;
+      color: #003366;
+    }
+
+    tr:hover {
+      cursor: pointer;
+      background: #eaf2fa;
+    }
+    thead tr:hover {
+      background: transparent;
+      cursor: default;
+    }
+
+    /*td:nth-child(4), th:nth-child(4) { text-align: right; } /* 4 столбец выравнивание по правому краю, целиком */
+    td:nth-child(3)  { color: green; font-weight: bold; }
+    td:nth-child(2)  { color: blue; font-weight: bold; }
+    td:nth-child(5)  { font-weight: bold; }
+    td:nth-child(10) { text-align: center; } /* 10 столбец выравнивание по правому краю, целиком */
+    td:nth-child(11) { text-align: right; }  /* 13 столбец выравнивание по правому краю, целиком */
+    td:nth-child(12), th:nth-child(12) { text-align: center; } /* 10 столбец выравнивание по центру, целиком */
+    td:nth-child(13) { text-align: right; } /* 13 столбец выравнивание по правому краю, целиком */
+    td:nth-child(14) { text-align: right; } /* 13 столбец выравнивание по правому краю, целиком */
+
+    @media (max-width: 768px) {
+      .stats-panel { flex-direction: column; align-items: stretch; }
+      thead th, td { padding: 8px 10px; font-size: 0.88rem; }
+    }
+  </style>
+</head>
+<body>
+
+<h1>Инвентаризация рабочих станций</h1>
+
+<div class="stats-panel" id="stats-panel">
+  <div class="stat-item">
+    Всего ПК: <span id="total-count" class="stat-value">0</span>
+  </div>
+  <div class="stat-item">
+    Windows: <span id="win-count" class="stat-value">0</span>
+  </div>
+  <div class="stat-item">
+    Linux: <span id="linux-count" class="stat-value">0</span>
+  </div>
+  <div class="stat-item">
+    i3: <span id="i3-count" class="stat-value">0</span>
+  </div>
+  <div class="stat-item">
+    i5: <span id="i5-count" class="stat-value">0</span>
+  </div>
+  <div class="stat-item">
+    i7: <span id="i7-count" class="stat-value">0</span>
+  </div>
+  <div class="stat-item">
+    i9: <span id="i9-count" class="stat-value">0</span>
+  </div>
+  <div class="stat-item">
+    AMD: <span id="amd-count" class="stat-value">0</span>
+  </div>
+</div>
+
+<div class="table-container">
+  <table id="myTable">
+    <thead>
+      <tr>
+        <th>date</th>
+        <th>ip</th>
+        <th>mac</th>
+        <th>motherboard</th>
+        <th>processor</th>
+        <th>memory</th>
+        <th>hard disk</th>
+        <th>hdd size</th>
+        <th>operation system</th>
+        <th>computer</th>
+        <th>printer</th>
+        <th>room</th>
+        <th>building</th>
+        <th>inventory namber</th>
+      </tr>
+    </thead>
+    <tbody>
+<!-- INSERT_DIMON_BLOCK_HERE -->
+      <tr>
+        <td>10.09.2026</td>
+        <td>10.67.11.32</td>
+        <td>00:58:3F:0D:24:AD</td>
+        <td>ASUSTeK PRIME B365M-C</td>
+        <td>Intel(R) i5-9400 2.90GHz</td>
+        <td>8GB</td>
+        <td>FOXLINE FLSSD256X5</td>
+        <td>SSD 256Gb</td>
+        <td>ALT Workstation 10.4</td>
+        <td>dpk5324</td>
+        <td>POScentre</td>
+        <td>312-3211</td>
+        <td>uprav</td>
+        <td>none</td>
+      </tr>
+
+      <tr>
+        <td>24.08.2026</td>
+        <td>10.67.64.73</td>
+        <td>00:58:3F:17:5A:FA</td>
+        <td>Aquarius AQH310CM</td>
+        <td>Intel(R) i5-9400 2.90GHz</td>
+        <td>8Gb</td>
+        <td>FOXLINE_FLSSD256X5</td>
+        <td>SSD 260Gb</td>
+        <td>ALT Workstation 9.0</td>
+        <td>1051a2</td>
+        <td>HP LaserJet 1320</td>
+        <td>828</td>
+        <td>pol1</td>
+        <td></td>
+      </tr>
+
+
+      <tr>
+        <td>26.08.2026</td>
+        <td>192.168.56.1</td>
+        <td>04-42-1A-0F-29-A3</td>
+        <td>ASUSTeK PRIME H510M-R</td>
+        <td>Intel i3-10100 3.60GHz</td>
+        <td>16Gb</td>
+        <td>unknown</td>
+        <td>unknown</td>
+        <td>Windows 10 Pro</td>
+        <td>WS-014-0198</td>
+        <td>HP Color LaserJet Pro MFP 4303</td>
+        <td>Кирилл Николаевич приемная</td>
+        <td>pol1</td>
+        <td></td>
+      </tr>
+
+
+
+    </tbody>
+  </table>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const rows = document.querySelectorAll("#myTable tbody tr");
+  let windowsCount = 0;
+  let linuxCount = 0;
+  let hddCount = 0;
+  let ssdCount = 0;
+  let i3Count = 0;
+  let i5Count = 0;
+  let i7Count = 0;
+  let i9Count = 0;
+  let amdCount = 0;
+
+  rows.forEach(row => {
+    const cells = row.querySelectorAll("td");
+    if (cells.length < 9) return;
+
+    // ОС — 9‑й столбец (индекс 8)
+    const osText = cells[8].textContent.trim().toLowerCase();
+    if (osText.includes("windows") || osText.includes("win")) {
+      windowsCount++;
+    } else if (osText.includes("linux") || osText.includes("alt") || osText.includes("astra") || osText.includes("centos") || osText.includes("ubuntu")) {
+      linuxCount++;
+    }
+
+    // Тип диска — 8‑й столбец (индекс 7)
+    const diskText = cells[7].textContent.trim().toUpperCase();
+    if (diskText.includes("SSD")) {
+      ssdCount++;
+      cells[7].classList.add("ssd");
+    } else if (diskText.includes("HDD")) {
+      hddCount++;
+      cells[7].classList.add("hdd");
+    }
+
+    // Процессор — 5‑й столбец (индекс 4)
+    const cpuText = cells[4].textContent.trim().toUpperCase();
+
+    if (cpuText.includes("I3")) {
+      i3Count++;
+      cells[4].classList.add("cpu-i3");
+    } else if (cpuText.includes("I5")) {
+      i5Count++;
+      cells[4].classList.add("cpu-i5");
+    } else if (cpuText.includes("I7")) {
+      i7Count++;
+      cells[4].classList.add("cpu-i7");
+    } else if (cpuText.includes("I9")) {
+      i9Count++;
+      cells[4].classList.add("cpu-i9");
+    } else if (cpuText.includes("AMD")) {
+      amdCount++;
+      cells[4].classList.add("cpu-amd");
+    }
+  });
+
+  // Обновляем заранее созданные элементы статистики
+  const totalEl = document.getElementById("total-count");
+  if (totalEl) totalEl.textContent = rows.length;
+
+  const winEl = document.getElementById("win-count");
+  if (winEl) winEl.textContent = windowsCount;
+
+  const linuxEl = document.getElementById("linux-count");
+  if (linuxEl) linuxEl.textContent = linuxCount;
+
+  const i3El = document.getElementById("i3-count");
+  if (i3El) i3El.textContent = i3Count;
+
+  const i5El = document.getElementById("i5-count");
+  if (i5El) i5El.textContent = i5Count;
+
+  const i7El = document.getElementById("i7-count");
+  if (i7El) i7El.textContent = i7Count;
+
+  const i9El = document.getElementById("i9-count");
+  if (i9El) i9El.textContent = i9Count;
+
+  const amdEl = document.getElementById("amd-count");
+  if (amdEl) amdEl.textContent = amdCount;
+});
+</script>
+</body>
+</html>

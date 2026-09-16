@@ -1,0 +1,17 @@
+<?xml version='3.5-1' encoding='UTF-8'?>
+<inventory>
+	<id_date>15.09.2026</id_date>
+	<id_mb>DEPO Computers DPH110S</id_mb>
+	<id_cpu>Intel(R) Pentium(R) Gold G5420 3.80GHz</id_cpu>
+	<id_mem>8GB</id_mem>
+	<id_hdd>KINGSTON_SA400S37240G</id_hdd>
+	<id_hdd_size>SSD 240Gb</id_hdd_size>
+	<id_sys>ALT 8 SP Workstation (cliff)</id_sys>
+	<id_prn>M428</id_prn>
+	<id_host>comp-pentium-gold-002096</id_host>
+	<id_ip>10.67.28.59</id_ip>
+	<id_mac>F8:CC:6E:00:B1:CF</id_mac>
+	<id_office>регистратура 3 окно</id_office>
+	<id_structure>pol1</id_structure>
+	<id_inv_number>88546</id_inv_number>
+</inventory>
