@@ -1,15 +1,13 @@
 ﻿## [5.2-2] - 2026-09-23
 ### Changed
 - номер версии теперь зашивается на этапе компиляции, в зависимости от имени директории
-```
-	makefile
+```makefile
 		BUILD_VERSION := $(notdir $(CURDIR))
 		CXXFLAGS += -DBUILD_VERSION_STR="\"$(BUILD_VERSION)\""
 	Так Makefile сам подставит имя папки и правильно обернёт его в кавычки для g++.
 ```
 
-```
-	cpp
+```cpp
 		#pragma once
 
 		#ifndef BUILD_VERSION_STR
