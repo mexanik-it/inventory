@@ -74,8 +74,15 @@ int main ( ) {
 
   inv.write_to_file ( );
 
-  inv.write_to_ftp ( );
-  inv.write_to_lan ( );
+  if( inv.write_to_ftp ( ) )
+	okMessage( "Transfer report to ftp-server...: " );
+  else
+	errMessage( "Error transfer to ftp " );
+
+  if( inv.write_to_lan ( ) )
+	okMessage( "Copy file to lan ..." );
+  else
+	errMessage( "Error copy to lan ..." );
 
 
 //  inv.delete_file ( );

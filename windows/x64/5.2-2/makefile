@@ -1,11 +1,16 @@
 TARGET = inventory.exe
 CXX = g++
+
+# Получаем имя текущей папки (например, "5.2-2")
+BUILD_VERSION := $(notdir $(CURDIR))
 CXXFLAGS = -Wall -Wextra -std=c++20
+CXXFLAGS += -DBUILD_VERSION_STR="\"$(BUILD_VERSION)\""
+
 LDFLAGS = -static -static-libstdc++ -lws2_32 -lwininet -lwinspool -lole32 -loleaut32 -lwbemuuid -liphlpapi
 
 SRCS = main.cpp added.cpp get_mb.cpp get_cpu.cpp get_hdd.cpp \
        get_mem.cpp get_lan.cpp get_host.cpp get_prn.cpp get_other.cpp \
-       get_sys.cpp  get_filename.cpp get_gpu.cpp  \
+       get_sys.cpp  get_filename.cpp   \
        write_to_file.cpp write_to_ftp.cpp write_to_lan.cpp \
        TInventory.cpp
 

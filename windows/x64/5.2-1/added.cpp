@@ -246,7 +246,6 @@ void clear_eol() {
 
 
 
-
 #include <iostream>
 #include <string>
 #include <windows.h>

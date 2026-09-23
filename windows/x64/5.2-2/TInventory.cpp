@@ -1,25 +1,22 @@
 #include <cerrno>
 #include <cstring>
 #include <unistd.h>
-#include <filesystem>
 
 #include "main.h"
 
+
+#ifndef BUILD_VERSION_STR
+#error "BUILD_VERSION_STR must be defined via -D in compiler flags"
+#endif
+
+constexpr const char* kBuildVersionDir = BUILD_VERSION_STR;
+
 using namespace std;
 
-
-std::string getCurrentDir() {
-    auto path = std::filesystem::current_path();
-    // parent_path() — путь без имени текущей папки
-    // filename() — имя текущей папки
-    return path.filename().string();
-}
-
 TInventory::TInventory( ) {  // конструктор класса
-    std::string ver = getCurrentDir();
 
     cout << endl;
-    cout << Colors::yellow  << "                                                               [ver " << ver << "]" << Colors::reset << endl;
+    cout << Colors::yellow  << "                                                               [ver " << kBuildVersionDir << "]" << Colors::reset << endl;
     cout << Colors::brown  << "=================|" << Colors::green  << "  Created by Dmitry Denkin (c) 2026  " << Colors::brown << "|==================" << endl;
     cout << Colors::blue    << " *******          " << Colors::cyan << " S y s t e m   I n f o r m a t i o n " << Colors::blue   << "           *******" << Colors::reset << endl << endl;
     time_t current_time = time( nullptr );
@@ -55,8 +52,6 @@ bool TInventory::scan_id ( void ) { // функция (метод класса) 
 	cout << "MB - error TInventory\n";
   if( !get_cpu() )
 	cout << "CPU - error\n";
-  if( !get_gpu() )
-	cout << "GPU - error\n";
   if( !get_mem() )
 	cout << "MEM - error\n";
   if( !get_hdd() )
@@ -93,8 +88,6 @@ bool TInventory::print_id( void ) { // функция (метод класса) 
         << "==> mother:\t"       << id_print( id_mb        )
         << "==> proc:\t"         << id_print( id_cpu       )
         << "==> memory:\t"       << id_print( id_mem       )
-        << "==> video:\t"        << id_print( id_gpu       )
-        << "==> video_size:\t"   << id_print( id_gpu_size  )
         << "==> ip-addr:\t"      << id_print( id_ip        )
         << "==> ip-mac:\t"       << id_print( id_mac       )
         << "==> hard disk:\t"    << id_print( id_hdd       )
