@@ -5,7 +5,7 @@ LDFLAGS = -static -static-libstdc++ -lws2_32 -lwininet -lwinspool -lole32 -lolea
 
 SRCS = main.cpp added.cpp get_mb.cpp get_cpu.cpp get_hdd.cpp \
        get_mem.cpp get_lan.cpp get_host.cpp get_prn.cpp get_other.cpp \
-       get_sys.cpp  get_filename.cpp   \
+       get_sys.cpp  get_filename.cpp get_gpu.cpp  \
        write_to_file.cpp write_to_ftp.cpp write_to_lan.cpp \
        TInventory.cpp
 

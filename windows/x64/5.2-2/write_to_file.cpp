@@ -19,6 +19,8 @@ bool TInventory::write_to_file() {
         << "\t<id_mb>"         << id_mb          << "</id_mb>\n"
         << "\t<id_cpu>"        << id_cpu         << "</id_cpu>\n"
         << "\t<id_mem>"        << id_mem         << "</id_mem>\n"
+        << "\t<id_gpu>"        << id_gpu         << "</id_gpu>\n"
+        << "\t<id_gpu_size>"   << id_gpu_size    << "</id_gpu_size>\n"
         << "\t<id_hdd>"        << id_hdd         << "</id_hdd>\n"
         << "\t<id_hdd_size>"   << id_hdd_size    << "</id_hdd_size>\n"
         << "\t<id_sys>"        << id_sys         << "</id_sys>\n"

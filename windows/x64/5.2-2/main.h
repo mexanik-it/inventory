@@ -1,8 +1,11 @@
 #pragma once
 
+
 #ifdef _WIN32
-#include <winsock2.h>
-#include <ws2tcpip.h>
+ #include <winsock2.h>
+ #include <ws2tcpip.h>
+#else
+    #error "This file is intended for Windows only. Use the Linux variant."
 #endif
 
 #include <iostream>
@@ -28,23 +31,23 @@ bool askYesNo(const std::string& prompt, const std::string& exit_command = "quit
 
 char* replace(char* src, int replaceme, int newchar);
 
-// Сетевые функции
+// --- Сетевые функции ---
 void checkHostName(int hostname);
 void checkHostEntry(struct hostent* hostentry);
 void checkIPbuffer(char* IPbuffer);
 
-// Функции очистки консоли
+// --- Функции очистки консоли ---
 void clearLines_up(int count);
 void clearlines_down(int n);
 void clear_current_line();
 void clear_n_lines(int n);
 void clear_n_lines_from_row(int start_y, int n);
 
-// Удаление подстроки
+// --- Удаление подстроки ---
 std::string remove_substring(const std::string&, const std::string&);
 void rem_subs(std::string id_str, const std::string& to_remove);
 
-/* замена всех вхождений подстроки */
+// --- Замена всех вхождений подстроки ---
 void replace_all(std::string& str, const std::string& from, const std::string& to);
 
 // --- Структуры ---
@@ -95,6 +98,8 @@ public:
         id_mb         = "unknown",      // название материнской платы
         id_cpu        = "unknown",      // название процессора
         id_mem        = "unknown",      // общий объём оперативной памяти
+        id_gpu        = "unknown",      // название видеокарты
+        id_gpu_size   = "unknown",      // общий объём памяти видеокарты
         id_ip         = "unknown",
         id_mac        = "unknown",
         id_hdd        = "unknown",
@@ -112,6 +117,7 @@ public:
     // Методы получения данных
     bool get_mb();
     bool get_cpu();
+    bool get_gpu();
     bool get_mem();
     bool get_lan();
     bool get_mac();

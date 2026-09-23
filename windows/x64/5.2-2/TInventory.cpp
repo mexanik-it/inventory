@@ -55,6 +55,8 @@ bool TInventory::scan_id ( void ) { // функция (метод класса) 
 	cout << "MB - error TInventory\n";
   if( !get_cpu() )
 	cout << "CPU - error\n";
+  if( !get_gpu() )
+	cout << "GPU - error\n";
   if( !get_mem() )
 	cout << "MEM - error\n";
   if( !get_hdd() )
@@ -91,6 +93,8 @@ bool TInventory::print_id( void ) { // функция (метод класса) 
         << "==> mother:\t"       << id_print( id_mb        )
         << "==> proc:\t"         << id_print( id_cpu       )
         << "==> memory:\t"       << id_print( id_mem       )
+        << "==> video:\t"        << id_print( id_gpu       )
+        << "==> video_size:\t"   << id_print( id_gpu_size  )
         << "==> ip-addr:\t"      << id_print( id_ip        )
         << "==> ip-mac:\t"       << id_print( id_mac       )
         << "==> hard disk:\t"    << id_print( id_hdd       )
