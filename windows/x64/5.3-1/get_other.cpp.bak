@@ -1,0 +1,71 @@
+#include "main.h"
+
+/***************************************************************************************************/
+/* возвращает запрашивает номер кабинета и название здания                                         */
+/***************************************************************************************************/
+
+
+bool TInventory::get_other()
+{
+
+std::vector<std::string> menu_kab = {
+        "Старшая сестра",
+        "Сестра хозяйка",
+        "Заведующая",
+        "Ординаторская",
+        "Остальное..."
+    };
+    std::cout << "Введите номер кабинета ... ";
+    int choice = show_menu_v(menu_kab, 27, 5);
+
+    switch (choice) {
+        case 0: { 
+	    id_office = "sts";
+	    clearlines_down(1);
+            clearLines_up( 4 );
+            std::cout << "Введите номер кабинета ... " << id_office << std::endl;
+            break;
+        }
+
+        case 1: { 
+	    id_office = "sth"; 
+	    id_office = "ordin"; 
+	    clearlines_down(1);
+            clearLines_up( 4 );
+            std::cout << "Введите номер кабинета ... " << id_office << std::endl;
+            break;
+        }
+
+        case 2: { 
+            id_office = "zaved"; 
+	    clearlines_down(1);
+            clearLines_up( 4 );
+            std::cout << "Введите номер кабинета ... " << id_office << std::endl;
+            break;
+        }
+
+        case 3: { 
+	    id_office = "ordin"; 
+	    clearlines_down(1);
+            clearLines_up( 4 );
+            std::cout << "Введите номер кабинета ... " << id_office << std::endl;
+            break;
+        }
+
+        case 4: {
+	    clearlines_down(1);
+            clearLines_up( 5 );
+            std::cout << "\nВведите номер кабинета вручную: ";
+            std::getline(std::cin, id_office);
+            break;
+        }
+    }
+
+    std::string full_name;
+
+
+    std::cout << "Enter the building: ";
+    getline(std::cin, id_structure);
+
+    return true;
+}
