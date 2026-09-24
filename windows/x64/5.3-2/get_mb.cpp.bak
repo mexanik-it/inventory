@@ -1,0 +1,102 @@
+#include <iostream>
+#include <winsock2.h>
+#include <windows.h>
+#include "main.h"
+
+/***************************************************************************************************/
+/* возвращает производителя и название материнской платы                                           */
+/* данные считываются из двух системных файлов, после каждого прочтени убираем концы строк,        */
+/* чтобы не было переноса - должна сформироваться одна строка (бех перехоса на новую строку        */
+/* и без возврата каретки                                                                          */
+/* tested on debian and alt linux                                                                  */
+/***************************************************************************************************/
+
+
+std::string executeCommand(const char* command) {
+    FILE* pipe = _popen(command, "r");
+    if (!pipe) return "Ошибка выполнения команды";
+
+    char buffer[128];
+    std::string result;
+
+    while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+        result += buffer;
+    }
+    _pclose(pipe);
+    return result;
+}
+
+std::string getMotherboardModel() {
+    return executeCommand("wmic baseboard get product");
+}
+
+std::string getMotherboardManufacturer() {
+    return executeCommand("wmic baseboard get manufacturer");
+}
+
+
+bool TInventory::get_mb( ) {
+
+  string buff = getMotherboardManufacturer();
+    // Убираем заголовок и лишние пробелы
+    size_t firstLine = buff.find("\n");
+    if (firstLine != std::string::npos) {
+        buff = buff.substr(firstLine + 1);
+    }
+
+    // Находим позицию первого перевода строки
+    size_t pos = buff.find('\n');
+    
+    // Если перевод строки найден, удаляем всё начиная с него
+    if (pos != std::string::npos) {
+        buff.erase(pos);
+    }  
+    id_mb = buff;  // название сформировано
+
+
+    /* формируем модель */
+    buff = getMotherboardModel();
+    // Убираем заголовок и лишние пробелы
+    firstLine = buff.find("\n");
+    if (firstLine != std::string::npos) {
+        buff = buff.substr(firstLine + 1);
+    }
+
+    // Находим позицию первого перевода строки
+    pos = buff.find("\n");
+    //buff.erase( pos, pos+2 );
+    // Если перевод строки найден, удаляем всё начиная с него
+    if (pos != std::string::npos) {
+        buff.erase(pos);
+    } 
+   id_mb.append( buff );
+    pos = id_mb.find('\r');
+    if (pos != std::string::npos) {
+        id_mb.erase(pos, 1);
+    } else {
+        std::cout << "Символ '" << '\r' << "' не найден." << std::endl;
+    }
+
+    // Находим позицию первого перевода строки
+    pos = id_mb.find(0x0D);
+    //buff.erase( pos, pos+2 );
+    // Если перевод строки найден, удаляем всё начиная с него
+    if (pos != std::string::npos) {
+        id_mb.erase(pos-2);
+    } 
+
+    // вырезаем все ненужное
+    string toRemove = "COMPUTER INC.  ";
+    pos = id_mb.find(toRemove);
+    if (pos != std::string::npos) {
+        id_mb.erase(pos, toRemove.length());
+    }
+
+    toRemove = "Technology Co., Ltd.  ";
+    pos = id_mb.find(toRemove);
+    if (pos != std::string::npos) {
+        id_mb.erase(pos, toRemove.length());
+    }
+
+  return true;
+}
