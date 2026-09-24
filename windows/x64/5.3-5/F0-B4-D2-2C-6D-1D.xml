@@ -15,12 +15,13 @@
 	<id_host>KOMPUTER</id_host>
 	<id_ip>169.254.146.206 / 10.67.2.33</id_ip>
 	<id_mac>F0-B4-D2-2C-6D-1D / 18-C0-4D-D7-67-0E</id_mac>
-	<id_office>23423423</id_office>
-	<id_structure>243423423</id_structure>
-	<id_inv_number>234324234</id_inv_number>
+	<id_office>324234234</id_office>
+	<id_structure>2432423423</id_structure>
+	<id_inv_number>234234242</id_inv_number>
 		<!-- serial numbers -->
 		<sn>
 			<sn_mb>Default string</sn_mb>
 			<sn_hdd>50026B738342A597 / WD-WMAV36904001</sn_hdd>
+			<sn_mem>4A662052 / unknown</sn_mem>
 		</sn>
   </inventory>

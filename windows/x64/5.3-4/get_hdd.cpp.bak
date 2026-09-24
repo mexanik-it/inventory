@@ -16,6 +16,7 @@ static unsigned long long wstrToUll(const std::wstring& s) {
 }
 
 
+// Реализация formatDiskSize
 std::wstring formatDiskSize(unsigned long long bytes) {
     const wchar_t* units[] = {L"b", L"Kb", L"Mb", L"Gb", L"Tb"};
     double size = static_cast<double>(bytes);
@@ -24,75 +25,13 @@ std::wstring formatDiskSize(unsigned long long bytes) {
         size /= 1000.0;
         unitIndex++;
     }
+    // Приводим к целому (отбрасываем дробную часть)
     unsigned long long sizeInt = static_cast<unsigned long long>(size);
 
     wchar_t buf[32];
     int len = swprintf(buf, 32, L"%llu%ls", sizeInt, units[unitIndex]);
     return std::wstring(buf, len > 0 ? len : 0);
 }
-
-
-// Определяет тип диска: паттерны модели → MediaType → BusType
-std::wstring detectDiskType(int mediaType, int busType, const std::wstring& model) {
-    std::wstring m = model;
-    std::transform(m.begin(), m.end(), m.begin(), ::towlower);
-
-    // 1. Явные признаки SSD в названии
-    if (m.find(L"ssd") != std::wstring::npos ||
-        m.find(L"nvme") != std::wstring::npos ||
-        m.find(L"m.2") != std::wstring::npos) {
-        return L"SSD";
-    }
-
-    // 2. Явные признаки HDD в названии
-    if (m.find(L"hdd") != std::wstring::npos ||
-        m.find(L"hard") != std::wstring::npos) {
-        return L"HDD";
-    }
-
-    // 3. WD HDD: паттерн "WD" + цифра (WD1600, WD5000, WD10EALS…)
-    //    WD SSD: "WDS" + цифра (WDS500G2…) — не matches, т.к. после WD идёт S
-    {
-        size_t pos = m.find(L"wd");
-        while (pos != std::wstring::npos) {
-            size_t next = pos + 2;
-            if (next < m.size() && std::iswdigit(m[next])) {
-                return L"HDD";
-            }
-            pos = m.find(L"wd", pos + 1);
-        }
-    }
-
-    // 4. Seagate HDD: паттерн "ST" + цифра (ST1000DM003, ST500LM012…)
-    {
-        size_t pos = m.find(L"st");
-        while (pos != std::wstring::npos) {
-            size_t next = pos + 2;
-            if (next < m.size() && std::iswdigit(m[next])) {
-                return L"HDD";
-            }
-            pos = m.find(L"st", pos + 1);
-        }
-    }
-
-    // 5. Доверяем MediaType
-    if (mediaType == 3) return L"HDD";
-    if (mediaType == 4) return L"SSD";
-
-    // 6. Эвристика по BusType
-    if (busType == 11) return L"SSD";  // NVMe — почти всегда SSD
-
-    // 7. Другие производители HDD
-    if (m.find(L"hgst") != std::wstring::npos ||
-        m.find(L"hitachi") != std::wstring::npos ||
-        m.find(L"toshiba") != std::wstring::npos ||
-        m.find(L"seagate") != std::wstring::npos) {
-        return L"HDD";
-    }
-
-    return L"Unknown";
-}
-
 
 std::vector<DiskInfo> getDisks() {
     std::vector<DiskInfo> disks;
@@ -155,16 +94,13 @@ std::vector<DiskInfo> getDisks() {
             pclsObj->Get(L"MediaType", 0, &varMedia, nullptr, nullptr);
             pclsObj->Get(L"BusType", 0, &varBus, nullptr, nullptr);
 
-            int busTypeVal = 0;
-            if (varBus.vt == VT_I4) {
-                busTypeVal = varBus.intVal;
-            } else if (varBus.vt == VT_UI4) {
-                busTypeVal = static_cast<int>(varBus.uintVal);
-            } else {
-                busTypeVal = -1;
-            }
+            // BusType == 7 � ��� USB, ����������
+            int busType = 0;
+            if (varBus.vt == VT_I4)  busType = varBus.intVal;
+            else if (varBus.vt == VT_UI4) busType = varBus.uintVal;
 
-            if (busTypeVal == 7) {
+            if (busType == 7) {
+                // USB-���� � ����������
                 VariantClear(&varModel);
                 VariantClear(&varSerial);
                 VariantClear(&varSize);
@@ -184,16 +120,18 @@ std::vector<DiskInfo> getDisks() {
             else if (varSize.vt == VT_UI8)
                 info.sizeBytes = varSize.ullVal;
 
-            int mediaTypeVal = 0;
             if (varMedia.vt == VT_I4) {
-                mediaTypeVal = varMedia.intVal;
+                switch (varMedia.intVal) {
+                    case 3:  info.type = L"HDD"; break;
+                    case 4:  info.type = L"SSD"; break;
+                    default: info.type = L"Unknown"; break;
+                }
             } else if (varMedia.vt == VT_UI4) {
-                mediaTypeVal = static_cast<int>(varMedia.uintVal);
-            } else {
-                mediaTypeVal = -1;
+                unsigned int v = varMedia.uintVal;
+                if (v == 3) info.type = L"HDD";
+                else if (v == 4) info.type = L"SSD";
+                else info.type = L"Unknown";
             }
-
-            info.type = detectDiskType(mediaTypeVal, busTypeVal, info.model);
 
             disks.push_back(info);
 
@@ -214,7 +152,6 @@ std::vector<DiskInfo> getDisks() {
     return disks;
 }
 
-
 std::string wstring_to_string(const std::wstring& wstr) {
     if (wstr.empty()) return "";
     int size_needed = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, nullptr, 0, nullptr, nullptr);
@@ -223,7 +160,6 @@ std::string wstring_to_string(const std::wstring& wstr) {
     str.erase(std::remove(str.begin(), str.end(), '\0'), str.end());
     return str;
 }
-
 
 bool TInventory::get_hdd() {
     auto disks = getDisks();
@@ -246,7 +182,9 @@ bool TInventory::get_hdd() {
         id_hdd_size += "-";
         id_hdd_size += wstring_to_string(formatDiskSize(d.sizeBytes));
 
+        // Серийный номер диска
         std::string sn = wstring_to_string(d.serialNumber);
+        // Убираем пробелы по краям
         size_t first = sn.find_first_not_of(" \t\n\r");
         size_t last  = sn.find_last_not_of(" \t\n\r");
         if (first != std::string::npos && last != std::string::npos) {
