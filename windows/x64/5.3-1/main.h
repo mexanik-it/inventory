@@ -95,27 +95,43 @@ class TInventory
 public:
     char buffer[80];
 
-    // Поля данных (инициализация в классе допустима в C++20)
-    std::string
-        id_date       = "unknown",      // дата
-        id_mb         = "unknown",      // название материнской платы
-        id_cpu        = "unknown",      // название процессора
-        id_mem        = "unknown",      // общий объём оперативной памяти
-        id_vga        = "unknown",      // название видеокарты
-        id_vga_size   = "unknown",      // объём видеокарты
-        id_ip         = "unknown",
-        id_mac        = "unknown",
-        id_hdd        = "unknown",
-        id_hdd_size   = "unknown",
-        id_host       = "unknown",      // название компьютера
-        id_sys        = "unknown",      // операционная система
-        id_prn        = "unknown",      // название принтера
-        id_filename   = "unknown",
-        id_office     = "unknown",      // кабинет
-        id_structure  = "unknown",      // здание
-        id_inv_number = "unknown";      // инвентарный номер
-
     TInventory();
+
+    // --- Ввод данных о местоположении ---
+    bool get_other();
+
+    // Методы записи/удаления
+    bool write_to_file();
+    bool delete_file();
+    bool write_to_ftp();
+    bool write_to_lan();
+
+    // --- Вывод сообщений ---
+    //void err_message(std::string str);
+    bool scan_id(void);
+    bool print_id(void);
+
+private:
+
+    // Поля данных (инициализация в классе допустима в C++20)
+std::string
+    id_date       = "unknown",      // дата
+    id_mb         = "unknown",      // название материнской платы
+    id_cpu        = "unknown",      // название процессора
+    id_mem        = "unknown",      // общий объём оперативной памяти
+    id_vga        = "unknown",      // название видеокарты
+    id_vga_size   = "unknown",      // объём памяти видеокарты
+    id_ip         = "unknown",      // ip - адрес
+    id_mac        = "unknown",      // mac - адрес
+    id_hdd        = "unknown",      // название жестких дисков
+    id_hdd_size   = "unknown",      // объём жестких дисков
+    id_host       = "unknown",      // название компьютера
+    id_sys        = "unknown",      // операционная система
+    id_prn        = "unknown",      // название принтера
+    id_filename   = "unknown",      // xml - файл
+    id_office     = "unknown",      // кабинет
+    id_structure  = "unknown",      // здание
+    id_inv_number = "unknown";      // инвентарный номер
 
     // Методы получения данных
     bool get_mb();
@@ -128,20 +144,7 @@ public:
     bool get_host();
     bool get_sys();
     bool get_prn();
-    bool get_other();
     bool get_filename();
 
-    // Методы записи/удаления
-    bool write_to_file();
-    bool delete_file();
-    bool write_to_ftp();
-    bool write_to_lan();
-
-    // Вывод сообщений
-    void err_message(std::string str);
-    bool scan_id(void);
-    bool print_id(void);
-
-private:
     void showMessage(std::string, std::string = "");
 };

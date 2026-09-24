@@ -165,6 +165,7 @@ bool TInventory::get_cpu() {
             }
         }
         if (!res.empty() && res.back() == ' ') res.pop_back();
+        if (!res.empty() && res.back() == 0) res.pop_back();
         s = std::move(res);
     };
     normalize_spaces(id_cpu);

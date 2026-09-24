@@ -161,7 +161,7 @@ bool TInventory::get_vga() {
         }
 
         id_vga      = name_str;
-        id_vga_size = std::to_string(format_vram_gb_int(gpu.memory_bytes)) + " GB";
+        id_vga_size = std::to_string(format_vram_gb_int(gpu.memory_bytes)) + "Gb";
     }
     return true;
 }

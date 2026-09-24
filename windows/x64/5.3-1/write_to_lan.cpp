@@ -54,7 +54,7 @@ bool TInventory::write_to_lan() {
         okMessage("Файл скопирован на сетевой ресурс: " + destPath);
         return true;
     } else {
-        errMessage("Ошибка при копировании файла: " + id_filename + " -> " + destPath);
+        errMessage("Ошибка при копировании файла -> " + destPath);
         return false;
     }
 }

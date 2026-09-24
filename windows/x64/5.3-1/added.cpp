@@ -305,7 +305,7 @@ void errMessage(const std::string& msg) {
     std::cout << "Fail";
 
     setConsoleColor(COLOR_GRAY);
-    std::cout << " ]";
+    std::cout << " ]  ";
     // 2. Печатаем сообщение посимвольно с задержкой
     for (char c : msg) {
         std::cout << c;

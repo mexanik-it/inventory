@@ -57,7 +57,7 @@ int main ( ) {
   SetConsoleOutputCP(65001);
   rebuildFont( );
   /* setlocale ( LC_ALL, "Russian" ); */
-//    SetConsoleSize(100, 30);
+    SetConsoleSize( 100, 33);
 //  if ( geteuid() ) {
 //     cout << "Launch is only possible with administrator (root) rights !" << endl
 //          << "Запуск только от имени администратора ... " << endl;
