@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- inventory v5.3-3 -->
+  <inventory>
+	<id_date>24.09.2026</id_date>
+	<id_mb>Gigabyte H510M H</id_mb>
+	<id_cpu>Intel Core i3-10100 CPU 3.60GHz</id_cpu>
+	<id_mem>8Gb</id_mem>
+	<id_mem_name>AMD R748G2606U2S         (8Gb)</id_mem_name>
+	<id_vga>Intel(R) UHD Graphics 630</id_vga>
+	<id_vga_size>1Gb</id_vga_size>
+	<id_hdd>KINGSTON SA400S37480G</id_hdd>
+	<id_hdd_size>SSD-480Gb</id_hdd_size>
+	<id_sys>Windows 10 Enterprise LTSC</id_sys>
+	<id_prn>HP LaserJet Pro M428fdw</id_prn>
+	<id_host>KOMPUTER</id_host>
+	<id_ip>169.254.146.206 / 10.67.2.33</id_ip>
+	<id_mac>F0-B4-D2-2C-6D-1D / 18-C0-4D-D7-67-0E</id_mac>
+	<id_office>24324234</id_office>
+	<id_structure>2342342</id_structure>
+	<id_inv_number>32423423</id_inv_number>
+		<!-- serial numbers -->
+		<sn>
+			<sn_mb>Default string</sn_mb>
+			<sn_hdd>50026B738342A597</sn_hdd>
+		</sn>
+  </inventory>
