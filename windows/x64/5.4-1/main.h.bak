@@ -1,0 +1,123 @@
+#pragma once
+
+// --- WINSOCK И WINDOWS: СТРОГО В ЭТОМ ПОРЯДКЕ ---
+// winsock2.h должен быть ПЕРЕД windows.h, иначе будет warning/ошибки
+#ifdef _WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#endif
+
+#include <iostream>
+#include <fstream>
+#include <cstdio>
+#include <string>
+#include <thread>
+#include <chrono>
+#include <ctime>
+#include <algorithm>
+#include <array>
+#include <vector>
+
+#include <windows.h>       // теперь можно
+// -------------------------------------------------
+
+#include "colors.h"        // если colors.h сам тянет windows.h — это ОК, 
+                            // потому что winsock2 уже подключён выше
+
+
+// Не делай using namespace std; в заголовочном файле — это плохая практика
+
+// --- Глобальные функции (диалоги, утилиты) ---
+bool askYesNo(const std::string& prompt, const std::string& exit_command = "quit");
+
+char* replace(char* src, int replaceme, int newchar);
+
+void checkHostName(int hostname);
+void checkHostEntry(struct hostent* hostentry);
+void checkIPbuffer(char* IPbuffer);
+
+// Консольные утилиты очистки
+void clearLines_up(int count);
+void clearlines_down(int n);
+void clear_current_line();
+void clear_n_lines(int n);
+void clear_n_lines_from_row(int start_y, int n);
+
+std::string remove_substring(const std::string&, const std::string&);
+void rem_subs(std::string id_str, const std::string& to_remove);
+
+
+// --- Структуры ---
+struct PrinterModel {
+    std::string part1;
+    std::string part2;
+    std::string full_name;
+};
+
+struct DiskInfo {
+    std::wstring model;
+    std::wstring serialNumber;
+    std::wstring type;
+    unsigned long long sizeBytes;
+};
+
+// Объявления функций работы с дисками
+std::wstring formatDiskSize(unsigned long long bytes);
+std::vector<DiskInfo> getDisks();
+
+
+// --- Класс TInventory ---
+class TInventory
+{
+public:
+    char buffer[80];
+
+    // Поля данных (инициализация в классе допустима в C++20)
+    std::string
+        id_date       = "unknown",
+        id_mb         = "unknown",
+        id_cpu        = "unknown",
+        id_mem        = "unknown",
+        id_ip         = "unknown",
+        id_mac        = "unknown",
+        id_hdd        = "unknown",
+        id_hdd_size   = "unknown",
+        id_host       = "unknown",
+        id_sys        = "unknown",
+        id_prn        = "unknown",
+        id_filename   = "unknown",
+        id_office     = "unknown",
+        id_structure  = "unknown",
+        id_inv_number = "unknown";
+
+    TInventory();
+
+    // Методы получения данных
+    bool get_mb();
+    bool get_cpu();
+    bool get_mem();
+    bool get_ip();
+    bool get_mac();
+    bool get_hdd();
+    bool get_host();
+    bool get_sys();
+    bool get_prn();
+    bool get_other();
+    bool get_filename();
+
+    // Методы записи/удаления
+    bool write_to_file();
+    bool delete_file();
+    bool write_to_ftp();
+    bool write_to_lan();
+
+    // Вывод сообщений
+    void err_message(std::string str);
+    bool scan_id(void);
+    bool print_id(void);
+
+private:
+    void errMessage(std::string);
+    void warMessage(std::string);
+    void showMessage(std::string, std::string = "");
+};
