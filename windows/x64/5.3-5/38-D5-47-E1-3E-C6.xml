@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- inventory v5.3-3 -->
+  <inventory>
+	<id_date>25.09.2026</id_date>
+	<id_mb>ASUSTeK Z170-K </id_mb>
+	<id_cpu>Intel Core i7-6700K CPU 4.00GHz</id_cpu>
+	<id_mem>32Gb</id_mem>
+	<id_mem_name>Corsair CMK16GX4M1B3000C15 (16Gb) / Corsair CMK16GX4M1B3000C15 (16Gb)</id_mem_name>
+	<id_vga>Intel(R) HD Graphics 530</id_vga>
+	<id_vga_size>1Gb</id_vga_size>
+	<id_hdd>TOSHIBA DT01ACA100 / KINGSTON SUV500240G</id_hdd>
+	<id_hdd_size>HDD-1Tb / SSD-240Gb</id_hdd_size>
+	<id_sys>Windows 10 Enterprise LTSC</id_sys>
+	<id_prn>HP LaserJet Pro M1132</id_prn>
+	<id_host>KOMPUTER</id_host>
+	<id_ip>192.168.0.129</id_ip>
+	<id_mac>38-D5-47-E1-3E-C6</id_mac>
+	<id_office>234242342</id_office>
+	<id_structure>3423432</id_structure>
+	<id_inv_number>234324323</id_inv_number>
+		<!-- serial numbers -->
+		<sn>
+			<sn_mb>160984047602229</sn_mb>
+			<sn_hdd>23IU432RS / 50026B7782452035</sn_hdd>
+			<sn_mem>unknown / unknown</sn_mem>
+		</sn>
+  </inventory>

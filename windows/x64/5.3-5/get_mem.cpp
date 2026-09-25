@@ -4,11 +4,61 @@
 #include <windows.h>
 #include <string>
 #include <algorithm>
+#include <vector>
 #include <wbemidl.h>
 
 /***************************************************************************************************/
-/* возвращает общее количество оперативной памяти в Gb                                             */
-/* а так-же названия модулей и их размер в Gb                                                      */
+/* Вспомогательные функции                                                                          */
+/***************************************************************************************************/
+
+static std::string trim(const std::string& s) {
+    size_t first = s.find_first_not_of(" \t\n\r");
+    if (first == std::string::npos) return "";
+    size_t last = s.find_last_not_of(" \t\n\r");
+    return s.substr(first, last - first + 1);
+}
+
+static std::string normalizeSpaces(const std::string& s) {
+    std::string res;
+    res.reserve(s.size());
+    bool lastWasSpace = true;
+    for (char c : s) {
+        if (c == ' ' || c == '\t' || c == '\n' || c == '\r') {
+            if (!lastWasSpace) {
+                res += ' ';
+                lastWasSpace = true;
+            }
+        } else {
+            res += c;
+            lastWasSpace = false;
+        }
+    }
+    if (!res.empty() && res.back() == ' ') res.pop_back();
+    return res;
+}
+
+static bool isDummySerial(const std::string& s) {
+    if (s.empty()) return true;
+
+    char first = s[0];
+    bool allSame = true;
+    for (char c : s) {
+        if (c != first) { allSame = false; break; }
+    }
+    if (allSame) return true;
+
+    std::string lower = s;
+    std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+    if (lower == "none" || lower == "null" || lower == "0" ||
+        lower == "00000000" || lower == "ffffffff") {
+        return true;
+    }
+
+    return false;
+}
+
+/***************************************************************************************************/
+/* Получение модулей памяти через WMI                                                               */
 /***************************************************************************************************/
 
 std::vector<MemoryModule> getMemoryModules() {
@@ -123,11 +173,13 @@ std::vector<MemoryModule> getMemoryModules() {
         // SerialNumber
         VariantInit(&vtProp);
         hr = pclsObj->Get(L"SerialNumber", 0, &vtProp, nullptr, nullptr);
-        if (SUCCEEDED(hr) && vtProp.vt == VT_BSTR && vtProp.bstrVal) {
-            int size = WideCharToMultiByte(CP_UTF8, 0, vtProp.bstrVal, -1, nullptr, 0, nullptr, nullptr);
-            if (size > 1) {
-                mod.serialNumber.resize(size - 1);
-                WideCharToMultiByte(CP_UTF8, 0, vtProp.bstrVal, -1, &mod.serialNumber[0], size, nullptr, nullptr);
+        if (SUCCEEDED(hr)) {
+            if (vtProp.vt == VT_BSTR && vtProp.bstrVal) {
+                int size = WideCharToMultiByte(CP_UTF8, 0, vtProp.bstrVal, -1, nullptr, 0, nullptr, nullptr);
+                if (size > 1) {
+                    mod.serialNumber.resize(size - 1);
+                    WideCharToMultiByte(CP_UTF8, 0, vtProp.bstrVal, -1, &mod.serialNumber[0], size, nullptr, nullptr);
+                }
             }
         }
         VariantClear(&vtProp);
@@ -139,7 +191,8 @@ std::vector<MemoryModule> getMemoryModules() {
             if (vtProp.vt == VT_UI8) {
                 mod.capacityBytes = vtProp.ullVal;
             } else if (vtProp.vt == VT_BSTR && vtProp.bstrVal) {
-                mod.capacityBytes = _wcstoui64(vtProp.bstrVal, nullptr, 10);
+                wchar_t* endptr = nullptr;
+                mod.capacityBytes = _wcstoui64(vtProp.bstrVal, &endptr, 10);
             }
         }
         VariantClear(&vtProp);
@@ -155,22 +208,8 @@ std::vector<MemoryModule> getMemoryModules() {
 }
 
 /***************************************************************************************************/
-/* Проверка, является ли серийный номер «заглушкой»                                                */
-/* Бюджетные модули часто не прошивают реальный SN, и BIOS возвращает 00000000, FFFFFFFF и т.п.   */
+/* Получение информации о памяти                                                                    */
 /***************************************************************************************************/
-static bool isDummySerial(const std::string& s) {
-    if (s.empty()) return true;
-
-    // Все символы — одинаковые (нули, единицы, F)
-    char first = s[0];
-    bool allSame = true;
-    for (char c : s) {
-        if (c != first) { allSame = false; break; }
-    }
-    if (allSame) return true;
-
-    return false;
-}
 
 bool TInventory::get_mem() {
     MEMORYSTATUSEX memoryInfo{};
@@ -189,7 +228,6 @@ bool TInventory::get_mem() {
 
     auto modules = getMemoryModules();
 
-    // Очищаем все поля перед заполнением
     id_mem_name.clear();
     sn_mem.clear();
 
@@ -207,33 +245,29 @@ bool TInventory::get_mem() {
 
         std::string capStr;
         if (mod.capacityBytes > 0) {
-            double gb = static_cast<double>(mod.capacityBytes)
-                      / (1024.0 * 1024.0 * 1024.0);
+            double gb = static_cast<double>(mod.capacityBytes) / bytesPerGiB;
             capStr = std::to_string(static_cast<long long>(gb)) + "Gb";
         } else {
             capStr = "unknown";
         }
 
-        id_mem_name += (mod.manufacturer.empty() ? "Unknown" : mod.manufacturer)
-                     + " "
-                     + (mod.partNumber.empty() ? "" : mod.partNumber)
-                     + " (" + capStr + ")";
+        // Нормализуем пробелы: убираем лишние по краям и схлопываем множественные
+        std::string man = mod.manufacturer.empty()
+            ? "Unknown"
+            : normalizeSpaces(mod.manufacturer);
+        std::string pn  = normalizeSpaces(mod.partNumber);
+
+        if (!pn.empty()) {
+            id_mem_name += man + " " + pn + " (" + capStr + ")";
+        } else {
+            id_mem_name += man + " (" + capStr + ")";
+        }
 
         // --- sn_mem: серийный номер модуля ---
         if (i > 0) sn_mem += " / ";
 
-        std::string sn = mod.serialNumber;
+        std::string sn = trim(mod.serialNumber);
 
-        // Убираем пробелы по краям (серийники памяти часто с пробелами)
-        size_t first = sn.find_first_not_of(" \t\n\r");
-        size_t last  = sn.find_last_not_of(" \t\n\r");
-        if (first != std::string::npos && last != std::string::npos) {
-            sn = sn.substr(first, last - first + 1);
-        } else {
-            sn.clear();
-        }
-
-        // Проверка на «пустые» серийники: 00000000, FFFFFFFF и подобные
         if (isDummySerial(sn)) {
             sn = "unknown";
         }
