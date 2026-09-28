@@ -1,0 +1,8 @@
+command for make
+>>>>>>>>>>>>>>>>
+ 
+make run		собрать и выполнить
+make clean		очистить временные файлы
+make clean run		очистить и выполнить
+make rebuild		пересобрать заново проект
+make rebuild run	пересобрать и выполнить

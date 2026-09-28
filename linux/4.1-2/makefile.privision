@@ -1,0 +1,49 @@
+# Имя исполняемого файла, который получим в результате сборки
+TARGET = ./inventory
+
+# Используем компилятор g++ с дополнительными опциями
+CXX = g++
+CXXFLAGS = -Wall -std=c++17
+LDFLAGS = -static -static-libstdc++
+
+# Задаём списки исходных файлов
+SRCS = main.cpp added.cpp get_mb.cpp get_cpu.cpp       \
+                                     get_mem.cpp       \
+                                     get_ip.cpp        \
+                                     get_host.cpp      \
+                                     get_mac.cpp       \
+                                     get_hdd.cpp       \
+                                     get_other.cpp     \
+                                     get_sys.cpp       \
+                                     get_hdd_size.cpp  \
+                                     get_filename.cpp  \
+                                     write_to_file.cpp \
+                                     write_to_ftp.cpp  \
+                                     write_to_lan.cpp  \
+                                     TInventory.cpp
+
+# Список объектов OBJS создаём из списка SRCS, заменяя .cpp на .o
+OBJS = $(SRCS:.cpp=.o)
+
+# Правило по умолчанию для сборки всего проекта говорит, что для сборки 'program' требуется,
+# чтобы были собраны цели из списка OBJS, и только тогда можно приступить к сборке 'program'
+$(TARGET): $(OBJS)
+	clear
+	$(CXX) $(OBJS) $(LDFLAGS) -o $(TARGET)
+# -lcurl
+
+# Правило для сборки объектных файлов: чтобы собрать цель (и есть файл) с расширением .o, нужно взять одноимённый файл .cpp
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o  $@
+
+# Rule to run the executable
+run: $(TARGET)
+	$(TARGET)
+
+
+# Удаление сгенерированных файлов из переменных OBJS и TARGET
+clean:
+	rm -f $(OBJS) $(TARGET)
+	@echo .
+	@echo All clean done..
+	@echo ~~~~~~~~~~~~~~~~
