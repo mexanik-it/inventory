@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<inventory>
+	<id_date>29.09.2026</id_date>
+	<id_mb>ASUSTeK A68HM-K</id_mb>
+	<mb_part>unknown</mb_part>
+	<mb_serial>151158671800524</mb_serial>
+	<id_cpu>AMD Athlon(tm) X2 340</id_cpu>
+	<id_mem>5Gb</id_mem>
+	<id_mem_name>DDR3 1333 MT/s DIMM_A1 (unknown) / DDR3 1333 MT/s DIMM_B1 (unknown)</id_mem_name>
+	<sn_mem>unknown / unknown</sn_mem>
+	<id_hdd>TOSHIBA DT01ACA100</id_hdd>
+	<id_hdd_size>HDD 1000Gb</id_hdd_size>
+	<id_sys>CentOS Stream 9</id_sys>
+	<id_prn>unknown</id_prn>
+	<id_host>localhost</id_host>
+	<id_ip>192.168.0.172</id_ip>
+	<id_mac>2C:56:DC:DB:90:05</id_mac>
+	<id_office>234234234</id_office>
+	<id_structure>23423423</id_structure>
+	<id_inv_number>23423423</id_inv_number>
+		<other_details>
+		  <mb_part></mb_part>
+		  <mb_serial>151158671800524</mb_serial>
+		</other_details>
+</inventory>

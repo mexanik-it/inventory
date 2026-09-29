@@ -1,0 +1,246 @@
+// main.h
+#pragma once
+#include <iostream>
+#include <fstream>
+#include <cstdio>
+#include <stdio.h>
+#include <string>
+#include <string.h>
+#include <vector>
+#include <cstdint>            // uint64_t
+#include <sys/types.h>
+#include <sys/sysinfo.h>
+#include <netdb.h>            // struct hostent
+#include <algorithm>
+
+#include "colors.h"
+
+using namespace std;
+
+// dialog Yes/No
+bool askYesNo( const string& prompt );
+
+// замена одного символа в строке
+char *replace( char *src, int replaceme, int newchar );
+
+// Returns hostname for the local computer
+void checkHostName(int hostname);
+
+// Returns host information corresponding to host name
+void checkHostEntry(struct hostent * hostentry);
+
+// Converts space-delimited IPv4 addresses
+// to dotted-decimal format
+void checkIPbuffer(char *IPbuffer);
+
+void okMessage(const std::string& msg);
+void errMessage(const std::string& msg);
+
+struct MbInfo {
+    std::string vendor;       // ASUSTeK
+    std::string model;        // A68HM-K
+    std::string part;
+    std::string serial;
+};
+
+struct DiskInfo {
+    std::string model;
+    long int size;
+    std::string type;
+};
+
+struct LanInfo {
+    std::string name;
+    std::string ip;
+    std::string mac;
+};
+
+// Эта структура нужна и на Windows, и на Linux — никаких #ifdef!
+struct MemoryModule {
+    std::string manufacturer;
+    std::string partNumber;
+    std::string serialNumber;
+    uint64_t capacityBytes = 0;
+
+    std::string memoryType;   // DDR3 / DDR4 (DMI Type)
+    std::string speed;        // 1333 MT/s  (Configured Memory Speed)
+    std::string locator;      // DIMM_A1    (слот)
+};
+
+class TInventory // имя класса
+{
+public: // спецификатор доступа public
+
+  char buffer[80];
+
+  TInventory( ); // конструктор класса
+
+  bool write_to_file( );
+  bool delete_file( );
+  bool write_to_ftp( );
+  bool write_to_lan( );
+  void err_message( string str); // функция (метод класса) выводящая сообщение об ошибке на экран
+  bool scan_id(  void );
+  bool print_id( void ); // функция (метод класса) выводящая данные на экран
+  bool get_other    ( );
+
+private:
+  string id_date       = "unknown",
+         id_mb         = "unknown",
+         id_cpu        = "unknown",
+         id_mem        = "unknown",
+         id_mem_name   = "unknown",
+         sn_mem        = "unknown",
+         id_ip         = "unknown",
+         id_mac        = "unknown",
+         id_host       = "unknown",
+         id_hdd        = "unknown",
+         id_hdd_size   = "unknown",
+         id_sys        = "unknown",
+         id_filename   = "unknown",
+         id_prn        = "unknown",     /*  принтер по умолчанию */
+         id_office     = "unknown",     /*  кабинет              */
+         id_structure  = "unknown",     /*  здание               */
+         id_inv_number = "unknown";     /*  инвентарный номер    */
+
+  string sn_mb         = "unknown";
+
+  bool get_mb       ( );
+  bool get_mb_sn    ( );
+  bool get_cpu      ( );
+  bool get_mem      ( );
+  bool get_ip       ( );
+  bool get_mac      ( );
+  bool get_hdd      ( );
+  bool get_host     ( );
+  bool get_sys      ( );
+  bool get_prn      ( );
+  bool get_hdd_size ( );
+  bool get_filename ( );
+
+}; // конец объявления класса TInventory
+// get_mb.cpp
+#include "main.h"
+#include <cctype>
+
+/***************************************************************************************************/
+/* Возвращает производителя и название материнской платы.                                          */
+/* Источник: /sys/class/dmi/id/ * — те же данные, что отдаёт dmidecode, но без root-вызова.        */
+/* Тестировалось на debian, alt linux, CentOS Stream.                                              */
+/***************************************************************************************************/
+
+// Читает один sysfs-файл в строку, обрезая перевод строки и пробелы
+static std::string readSysfs(const std::string& path) {
+    std::ifstream f(path);
+    if (!f.is_open()) return std::string();
+
+    std::string value;
+    std::getline(f, value);
+
+    size_t first = value.find_first_not_of(" \t\r\n");
+    if (first == std::string::npos) return std::string();
+    size_t last = value.find_last_not_of(" \t\r\n");
+    return value.substr(first, last - first + 1);
+}
+
+// Убирает юридические хвосты и нормализует капс:
+// "ASUSTeK COMPUTER INC." -> "ASUSTeK", "Micro-Star International Co., Ltd." -> "MSI"
+static std::string cleanVendor(const std::string& raw) {
+    std::string v = raw;
+
+    static const char* suffixes[] = {
+        " Computer Inc.", " Computer Inc", " COMPUTER INC.", " COMPUTER INC",
+        " Computer Systems", " Technologies Corp.", " Technology Co., Ltd.",
+        " Technologies Co., Ltd.", " Co., Ltd.", " Corp.", " Inc.",
+        " International", " Electronics", " Technology", " Technologies"
+    };
+    for (const char* s : suffixes) {
+        size_t pos = v.find(s);
+        if (pos != std::string::npos && pos > 0) {
+            v = v.substr(0, pos);
+            break;
+        }
+    }
+
+    // Полностью капсовые вендоры читаются лучше в обычном регистре
+    bool allUpper = !v.empty();
+    for (char c : v) {
+        if (std::isalpha(static_cast<unsigned char>(c)) &&
+            !std::isupper(static_cast<unsigned char>(c))) { allUpper = false; break; }
+    }
+    if (allUpper && v.size() > 2 && v.size() <= 6)
+        for (char& c : v) c = std::toupper(static_cast<unsigned char>(c));
+
+    size_t first = v.find_first_not_of(" \t\r\n");
+    if (first == std::string::npos) return std::string();
+    size_t last = v.find_last_not_of(" \t\r\n");
+    return v.substr(first, last - first + 1);
+}
+
+bool TInventory::get_mb( ) {
+    MbInfo mb{};
+
+    mb.vendor = readSysfs("/sys/class/dmi/id/board_vendor");
+    mb.model  = readSysfs("/sys/class/dmi/id/board_name");
+
+    // На части OEM-машин board_* пустые — откатываемся на системные поля
+    if (mb.vendor.empty() && mb.model.empty()) {
+        mb.vendor = readSysfs("/sys/class/dmi/id/sys_vendor");
+        mb.model  = readSysfs("/sys/class/dmi/id/product_name");
+    }
+
+    mb.vendor = cleanVendor(mb.vendor);
+
+    id_mb.erase();
+    if (!mb.vendor.empty() && !mb.model.empty())
+        id_mb = mb.vendor + " " + mb.model + " " + mb.serial;
+    else if (!mb.model.empty())
+        id_mb = mb.model;
+    else if (!mb.vendor.empty())
+        id_mb = mb.vendor;
+    else {
+        errMessage("MB: не удалось прочитать данные платы");
+        return false;
+    }
+
+    return true;
+}
+
+/***************************************************************************************************/
+/* Серийный номер платы (DMI board serial).                                                        */
+/* На десктопных платах часто "To be filled by O.E.M." — это мусор, не пишем его в отчёт.          */
+/***************************************************************************************************/
+
+static bool isPlaceholderSn(const std::string& s) {
+    if (s.empty()) return true;
+
+    std::string lower = s;
+    std::transform(lower.begin(), lower.end(), lower.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
+
+    static const char* junk[] = {
+        "to be filled by o.e.m.", "to be filled by oem", "not specified",
+        "none", "default string", "system serial number", "board serial number",
+        "unknown", "0", "0000000000", "ffffffff", "null"
+    };
+    for (const char* j : junk) if (lower == j) return true;
+
+    bool allSame = true;
+    for (char c : s) if (c != s[0]) { allSame = false; break; }
+    return allSame;
+}
+
+bool TInventory::get_mb_sn( ) {
+    std::string sn = readSysfs("/sys/class/dmi/id/board_serial");
+
+    if (sn.empty())
+        sn = readSysfs("/sys/class/dmi/id/product_serial");
+
+    if (isPlaceholderSn(sn)) {
+        sn_mb = "unknown";
+        return true;                      // не ошибка, просто OEM не прошил serial
+    }
+
+    sn_mb = sn;
+    return true;
+}

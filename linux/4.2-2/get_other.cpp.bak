@@ -1,0 +1,37 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <map>
+#include "main.h"
+
+/***************************************************************************************************/
+/* возвращает производителя и название материнской платы                                           */
+/***************************************************************************************************/
+
+
+//#include <iostream>
+#include <unistd.h>   // для gethostname()
+#include <limits.h>  // для HOST_NAME_MAX
+
+bool TInventory::get_other( ) {
+
+  string full_name;
+
+//  cout << "\033[31;1;4mHello\033[0m" << endl;
+//  cout << "\033[31;1;9mHello\033[0m" << endl;
+//  cout << "\033[31;1;21mHello\033[0m" << endl;
+//  cout << "\033[[38;5;172mmHello\033[0m" << endl;
+  cout << "Введите кабинет: ";
+  getline( cin, id_office );
+
+  //cin.ignore(); // очищаем буфер от символа \n после ввода числа
+
+  cout << "Введите здание: ";
+  getline( cin, id_structure );
+
+  //cout << "Имя: " << full_name << ", возраст: " << age << endl;
+  return true;
+
+}
+
+

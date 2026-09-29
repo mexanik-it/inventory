@@ -50,6 +50,9 @@ struct MemoryModule {
     std::string partNumber;
     std::string serialNumber;
     uint64_t capacityBytes = 0;
+std::string memoryType;   // DDR3
+std::string speed;        // 1333 MT/s
+std::string locator;      // DIMM_A1};
 };
 
 class TInventory // имя класса

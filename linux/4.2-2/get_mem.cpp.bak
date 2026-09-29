@@ -1,0 +1,21 @@
+#include "main.h"
+#include <cmath>
+
+/***************************************************************************************************/
+/* возвращает общее количество оперативной памяти в Gb                                             */
+/***************************************************************************************************/
+
+bool TInventory::get_mem( ) {
+ 
+ float ram = 0;
+ int total_ram = 0;
+ struct sysinfo info;
+ sysinfo(&info);
+
+ ram = info.totalram / 100000000;
+ ram = ram / 10;
+ total_ram = ceil( ram );
+ id_mem = to_string( total_ram ) + " Gb";
+
+ return true;
+}
