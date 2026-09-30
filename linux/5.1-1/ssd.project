@@ -1,0 +1,53 @@
+
+Я
+g++ программно определить тип жесткого диска hdd ssd
+Алиса
+Разберу, как программно определить тип диска (HDD/SSD) в Linux с помощью C++ и системных утилит — с примерами кода.
+
+Способ 1. Через sysfs (рекомендуемый)
+Самый надёжный и быстрый способ — чтение файлов в /sys/block/.
+
+Логика:
+
+Если файл /sys/block/<dev>/queue/rotational содержит 1 — это HDD (есть вращение).
+
+Если 0 — SSD (нет вращения).
+
+Пример кода:
+
+cpp
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+
+std::string getDiskType(const std::string& device) {
+    std::string path = "/sys/block/" + device + "/queue/rotational";
+    std::ifstream file(path);
+    std::string value;
+
+    if (file.is_open()) {
+        file >> value;
+        file.close();
+        if (value == "0") {
+            return "SSD";
+        } else if (value == "1") {
+            return "HDD";
+        }
+    }
+    return "Unknown";
+}
+
+int main() {
+    std::vector<std::string> disks = {"sda", "sdb", "nvme0n1"}; // Замените на актуальные имена дисков
+
+    for (const auto& disk : disks) {
+        std::cout << "Disk " << disk << ": " << getDiskType(disk) << std::endl;
+    }
+
+    return 0;
+}
+Компиляция:
+
+bash
+g++ -o disk_type disk_type.cpp

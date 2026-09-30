@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<inventory>
+	<id_date>30.09.2026</id_date>
+	<id_mb>ASUSTeK A68HM-K</id_mb>
+	<id_cpu>AMD Athlon(tm) X2 340</id_cpu>
+	<id_mem>6Gb</id_mem>
+	<id_mem_name>A1_Manufacturer0 Array1_PartNumber0 (2Gb) / A1_Manufacturer1 Array1_PartNumber1 (4Gb)</id_mem_name>
+	<id_hdd>TOSHIBA DT01ACA100</id_hdd>
+	<id_hdd_size>HDD 1000Gb</id_hdd_size>
+	<id_sys>CentOS Stream 9</id_sys>
+	<id_prn>unknown</id_prn>
+	<id_host>localhost</id_host>
+	<id_ip>192.168.0.172</id_ip>
+	<id_mac>2C:56:DC:DB:90:05</id_mac>
+	<id_office>23423432432</id_office>
+	<id_structure>2432434234</id_structure>
+	<id_inv_number>43242342342</id_inv_number>
+	<other_details>
+		<mb_part>unknown</mb_part>
+		<mb_serial>151158671800524</mb_serial>
+		<mem_module>
+			<vendor>A1_Manufacturer0</vendor>
+			<part>Array1_PartNumber0</part>
+			<size>2Gb</size>
+			<serial>A1_SerNum0</serial>
+		</mem_module>
+		<mem_module>
+			<vendor>A1_Manufacturer1</vendor>
+			<part>Array1_PartNumber1</part>
+			<size>4Gb</size>
+			<serial>A1_SerNum1</serial>
+		</mem_module>
+	</other_details>
+</inventory>
